@@ -120,10 +120,27 @@ function createKabutackPanel(): { element: HTMLElement; dispose: () => void } {
             catalogPanel.textContent = ''
             const toolbar = el('div', 'kbt-toolbar')
             const search = el('input', 'kbt-input') as HTMLInputElement
-            search.placeholder = '搜索插件 / Skill / MCP…'
+            search.placeholder = '搜索当前分类…'
             const refresh = el('button', 'kbt-btn ghost', '刷新')
             toolbar.append(search, refresh)
             catalogPanel.append(toolbar)
+
+            // 分类分页
+            const kindTabs = el('div', 'kbt-tabs')
+            let currentKind: 'plugin' | 'skill' | 'mcp' = 'plugin'
+            const kindButtons: HTMLButtonElement[] = []
+            const kinds: Array<['plugin' | 'skill' | 'mcp', string]> = [['plugin', '插件'], ['skill', 'Skill'], ['mcp', 'MCP']]
+            for (const [value, label] of kinds) {
+              const btn = el('button', 'kbt-tab' + (value === currentKind ? ' active' : ''), label)
+              btn.addEventListener('click', () => {
+                currentKind = value
+                for (const b of kindButtons) b.classList.toggle('active', b === btn)
+                draw()
+              })
+              kindButtons.push(btn)
+              kindTabs.append(btn)
+            }
+            catalogPanel.append(kindTabs)
 
             const draw = (): void => {
               for (const node of Array.from(catalogPanel.querySelectorAll('.kbt-section'))) node.remove()
@@ -219,37 +236,32 @@ function createKabutackPanel(): { element: HTMLElement; dispose: () => void } {
                 return list
               }
 
-              // 插件
-              const pluginSection = el('div', 'kbt-section')
-              pluginSection.append(el('h4', 'kbt-section-title', '插件'))
-              const pluginItems = catalog.plugins
-                .map((p: any) => ({ ...p, title: p.moduleName, stateText: p.enabled ? '运行中' : '已停用', stateCls: p.enabled ? 'on' : 'off' }))
-                .filter((x: any) => matches(x.title))
-              pluginSection.append(renderItems(pluginItems, 'plugin'))
-              catalogPanel.append(pluginSection)
-
-              // Skill
-              const skillSection = el('div', 'kbt-section')
-              skillSection.append(el('h4', 'kbt-section-title', 'Skill'))
-              const skillItems = catalog.skills
-                .map((s: any) => ({ ...s, title: s.name, stateText: (s.modelInvocable ? 'M' : '-') + '/' + (s.userInvocable ? 'U' : '-'), stateCls: s.modelInvocable || s.userInvocable ? 'on' : 'off' }))
-                .filter((x: any) => matches(x.title))
-              skillSection.append(renderItems(skillItems, 'skill'))
-              catalogPanel.append(skillSection)
-
-              // MCP
-              const mcpSection = el('div', 'kbt-section')
-              const mcpHead = el('div', 'kbt-toolbar')
-              mcpHead.append(el('h4', 'kbt-section-title', 'MCP'))
-              const addMcpBtn = el('button', 'kbt-btn ghost', '添加 MCP')
-              addMcpBtn.addEventListener('click', () => openMcpModal())
-              mcpHead.append(addMcpBtn)
-              mcpSection.append(mcpHead)
-              const mcpItems = catalog.mcps
-                .map((m: any) => ({ ...m, title: m.serverName, stateText: m.enabled ? '运行中' : '已停用', stateCls: m.enabled ? 'on' : 'off' }))
-                .filter((x: any) => matches(x.title))
-              mcpSection.append(renderItems(mcpItems, 'mcp'))
-              catalogPanel.append(mcpSection)
+              const section = el('div', 'kbt-section')
+              if (currentKind === 'plugin') {
+                section.append(el('h4', 'kbt-section-title', '插件'))
+                const items = catalog.plugins
+                  .map((p: any) => ({ ...p, title: p.moduleName, stateText: p.enabled ? '运行中' : '已停用', stateCls: p.enabled ? 'on' : 'off' }))
+                  .filter((x: any) => matches(x.title))
+                section.append(renderItems(items, 'plugin'))
+              } else if (currentKind === 'skill') {
+                section.append(el('h4', 'kbt-section-title', 'Skill'))
+                const items = catalog.skills
+                  .map((s: any) => ({ ...s, title: s.name, stateText: (s.modelInvocable ? 'M' : '-') + '/' + (s.userInvocable ? 'U' : '-'), stateCls: s.modelInvocable || s.userInvocable ? 'on' : 'off' }))
+                  .filter((x: any) => matches(x.title))
+                section.append(renderItems(items, 'skill'))
+              } else {
+                const head = el('div', 'kbt-toolbar')
+                head.append(el('h4', 'kbt-section-title', 'MCP'))
+                const addMcpBtn = el('button', 'kbt-btn ghost', '添加 MCP')
+                addMcpBtn.addEventListener('click', () => openMcpModal())
+                head.append(addMcpBtn)
+                section.append(head)
+                const items = catalog.mcps
+                  .map((m: any) => ({ ...m, title: m.serverName, stateText: m.enabled ? '运行中' : '已停用', stateCls: m.enabled ? 'on' : 'off' }))
+                  .filter((x: any) => matches(x.title))
+                section.append(renderItems(items, 'mcp'))
+              }
+              catalogPanel.append(section)
             }
 
             search.addEventListener('input', draw)
