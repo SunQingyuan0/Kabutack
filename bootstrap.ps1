@@ -1,7 +1,6 @@
 $ErrorActionPreference = 'Stop'
 
-# TODO: 发布到 GitHub 后，把这里替换为真实仓库地址
-$RepoUrl = 'https://github.com/<owner>/<repo>.git'
+$RepoUrl = 'https://github.com/SunQingyuan0/Kabutack.git'
 $InstallDir = Join-Path $env:TEMP 'kabutack-install'
 
 if (Test-Path $InstallDir) {

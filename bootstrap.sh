@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# TODO: 发布到 GitHub 后，把这里替换为真实仓库地址
-REPO_URL="${REPO_URL:-https://github.com/<owner>/<repo>.git}"
+REPO_URL="${REPO_URL:-https://github.com/SunQingyuan0/Kabutack.git}"
 INSTALL_DIR="${TMPDIR:-/tmp}/kabutack-install"
 
 rm -rf "$INSTALL_DIR"

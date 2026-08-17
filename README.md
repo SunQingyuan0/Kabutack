@@ -72,14 +72,12 @@ powershell -ExecutionPolicy Bypass -File install.ps1 -Profile my-profile
 #### 方式二：远程一行命令（仓库发布到 GitHub 后）
 
 ```powershell
-powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/<owner>/<repo>/main/bootstrap.ps1 | iex"
+powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/SunQingyuan0/Kabutack/main/bootstrap.ps1 | iex"
 ```
 
 ```bash
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/<owner>/<repo>/main/bootstrap.sh)"
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/SunQingyuan0/Kabutack/main/bootstrap.sh)"
 ```
-
-> 发布前请将 `bootstrap.ps1` / `bootstrap.sh` 中的仓库地址替换为真实地址。
 
 ### 手动安装（可选）
 
