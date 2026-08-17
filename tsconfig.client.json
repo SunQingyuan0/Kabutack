@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "lib": ["ES2020", "DOM"],
+    "strict": true,
+    "types": [],
+    "declaration": false,
+    "outDir": "lib/.client-build",
+    "rootDir": "src/client",
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "sourceMap": false
+  },
+  "include": ["src/client"]
+}
