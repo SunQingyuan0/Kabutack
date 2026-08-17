@@ -238,20 +238,17 @@ function createKabutackPanel(): { element: HTMLElement; dispose: () => void } {
 
               const section = el('div', 'kbt-section')
               if (currentKind === 'plugin') {
-                section.append(el('h4', 'kbt-section-title', '插件'))
                 const items = catalog.plugins
                   .map((p: any) => ({ ...p, title: p.moduleName, stateText: p.enabled ? '运行中' : '已停用', stateCls: p.enabled ? 'on' : 'off' }))
                   .filter((x: any) => matches(x.title))
                 section.append(renderItems(items, 'plugin'))
               } else if (currentKind === 'skill') {
-                section.append(el('h4', 'kbt-section-title', 'Skill'))
                 const items = catalog.skills
                   .map((s: any) => ({ ...s, title: s.name, stateText: (s.modelInvocable ? 'M' : '-') + '/' + (s.userInvocable ? 'U' : '-'), stateCls: s.modelInvocable || s.userInvocable ? 'on' : 'off' }))
                   .filter((x: any) => matches(x.title))
                 section.append(renderItems(items, 'skill'))
               } else {
                 const head = el('div', 'kbt-toolbar')
-                head.append(el('h4', 'kbt-section-title', 'MCP'))
                 const addMcpBtn = el('button', 'kbt-btn ghost', '添加 MCP')
                 addMcpBtn.addEventListener('click', () => openMcpModal())
                 head.append(addMcpBtn)
