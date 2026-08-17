@@ -26,7 +26,9 @@ $TargetDir = [System.IO.Path]::GetFullPath($TargetDir)
 
 # 1. Copy runtime files to a stable location
 New-Item -ItemType Directory -Force -Path $TargetDir | Out-Null
-Copy-Item -Force -Recurse (Join-Path $SourceDir 'lib') (Join-Path $TargetDir 'lib')
+$targetLib = Join-Path $TargetDir 'lib'
+New-Item -ItemType Directory -Force -Path $targetLib | Out-Null
+Copy-Item -Force -Recurse (Join-Path $SourceDir 'lib\*') $targetLib
 Copy-Item -Force (Join-Path $SourceDir 'package.json') (Join-Path $TargetDir 'package.json')
 
 # 2. Create node_modules junction/symlink inside the DSH profile

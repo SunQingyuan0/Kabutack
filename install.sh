@@ -13,8 +13,8 @@ if [ ! -f "$PACKAGE_FILE" ]; then
 fi
 
 TARGET_DIR="${TARGET_DIR:-$DSH_HOME/kabutack}"
-mkdir -p "$TARGET_DIR"
-cp -R "$SOURCE_DIR/lib" "$TARGET_DIR/lib"
+mkdir -p "$TARGET_DIR/lib"
+cp -R "$SOURCE_DIR/lib/." "$TARGET_DIR/lib/"
 cp "$SOURCE_DIR/package.json" "$TARGET_DIR/package.json"
 
 EXT_DIR="$PROFILE_DIR/node_modules/@dsh-external"
