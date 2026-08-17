@@ -22,7 +22,43 @@
 - [docs/07-testing-and-acceptance.md](docs/07-testing-and-acceptance.md) — 测试与验收
 - [docs/08-open-questions.md](docs/08-open-questions.md) — 开放问题
 
-## 构建与注入
+## 一键安装（其他机器 / 原生 DSH）
+
+### 方式一：本地仓库
+
+```powershell
+# Windows PowerShell
+powershell -ExecutionPolicy Bypass -File install.ps1
+```
+
+```bash
+# macOS / Linux / Git Bash
+./install.sh
+```
+
+默认安装到 DSH 的 `web` profile；如需指定 profile：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File install.ps1 -Profile my-profile
+```
+
+```bash
+./install.sh my-profile
+```
+
+安装后重启 DSH 即可加载 Kabutack。
+
+### 方式二：远程一行命令（仓库发布到 GitHub 后）
+
+```powershell
+powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/<owner>/<repo>/main/install.ps1 | iex"
+```
+
+```bash
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/<owner>/<repo>/main/install.sh)"
+```
+
+## 开发构建与注入
 
 ```bash
 # 构建 host + client

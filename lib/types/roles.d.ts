@@ -1,0 +1,12 @@
+import type { CreateRoleInput, Role, RoleManagerStore, RoleSummary, UpdateRoleInput } from './types.js';
+export declare function defaultDataDir(): string;
+export declare function rolesFile(dataDir: string): string;
+export declare function loadStore(dataDir?: string): RoleManagerStore;
+export declare function saveStore(store: RoleManagerStore, dataDir?: string): void;
+export declare function listRoles(store: RoleManagerStore): RoleSummary[];
+export declare function getRole(store: RoleManagerStore, id: string): Role | undefined;
+export declare function createRole(store: RoleManagerStore, input: CreateRoleInput): Role;
+export declare function updateRole(store: RoleManagerStore, id: string, patch: UpdateRoleInput): Role;
+export declare function deleteRole(store: RoleManagerStore, id: string): void;
+export declare function duplicateRole(store: RoleManagerStore, id: string, newId?: string): Role;
+export declare function setActiveRole(store: RoleManagerStore, id: string | null): void;
