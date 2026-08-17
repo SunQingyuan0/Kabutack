@@ -30,6 +30,7 @@ $targetLib = Join-Path $TargetDir 'lib'
 New-Item -ItemType Directory -Force -Path $targetLib | Out-Null
 Copy-Item -Force -Recurse (Join-Path $SourceDir 'lib\*') $targetLib
 Copy-Item -Force (Join-Path $SourceDir 'package.json') (Join-Path $TargetDir 'package.json')
+Copy-Item -Force (Join-Path $SourceDir 'cordis.patch.yml') (Join-Path $TargetDir 'cordis.patch.yml')
 
 # 2. Create node_modules junction/symlink inside the DSH profile
 $extDir = Join-Path $profileDir 'node_modules\@dsh-external'

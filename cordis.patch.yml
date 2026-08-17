@@ -1,0 +1,3 @@
+- insert:
+    - id: kabutack
+      name: '@dsh-external/kabutack'

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { mkdtempSync, rmSync } from 'node:fs'
+import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { loadStore, saveStore, createRole, updateRole, deleteRole, setActiveRole, duplicateRole } from '../lib/roles.js'
@@ -20,6 +20,22 @@ function run(name, fn) {
     (err) => { console.error('FAIL', name, err); process.exitCode = 1 },
   ))
 }
+
+run('package ships a valid DSH bundle patch', () => {
+  const packageFile = new URL('../package.json', import.meta.url)
+  const pkg = JSON.parse(readFileSync(packageFile, 'utf8'))
+  const declaredPatch = pkg.dsh?.bundle?.patch
+
+  assert.equal(declaredPatch, './cordis.patch.yml')
+  assert.ok(pkg.files.includes('cordis.patch.yml'))
+
+  const patchFile = new URL(`../${declaredPatch.replace(/^\.\//, '')}`, import.meta.url)
+  assert.equal(existsSync(patchFile), true)
+
+  const patch = readFileSync(patchFile, 'utf8')
+  assert.match(patch, /id:\s*kabutack/)
+  assert.match(patch, /name:\s*['"]@dsh-external\/kabutack['"]/)
+})
 
 run('roles store roundtrip', () => {
   const dir = tempDir()

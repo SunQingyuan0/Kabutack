@@ -83,7 +83,7 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/SunQingyuan0/Kabutack/ma
 
 如果你熟悉 DSH profile 结构，也可以手动完成：
 
-1. 将 `lib/` 与 `package.json` 复制到 `~/.dsh/kabutack`
+1. 将 `lib/`、`package.json` 与 `cordis.patch.yml` 复制到 `~/.dsh/kabutack`
 2. 在 `~/.dsh/profiles/<profile>/node_modules/@dsh-external/` 下创建指向该目录的 junction/symlink
 3. 在 profile 的 `package.json` 中：
    - `dependencies` 添加 `"@dsh-external/kabutack": "link:<path>"`
@@ -155,6 +155,7 @@ Kabutack/
 │   ├── skills-ops.ts     # Skill 管理
 │   └── client/           # 设置页 UI
 ├── lib/                  # 预构建产物（安装时直接使用）
+├── cordis.patch.yml      # DSH bundle 装配入口
 ├── scripts/              # 构建脚本
 ├── test/                 # 单元测试
 ├── docs/                 # 详细设计文档
