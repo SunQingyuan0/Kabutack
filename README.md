@@ -1,30 +1,51 @@
-# Kabutack（DSH 角色化能力管理插件）
+# Kabutack
 
-> 统一管理 DSH 插件 / Skill / MCP，支持角色 CRUD、一键切换与动态装载/卸载、持久化与重启恢复。
+> 统一管理 DSH 插件 / Skill / MCP，并按“角色”一键动态装载与切换。
 
-## 功能
+Kabutack 是一个面向 [DSH](https://github.com/deepseek-ai/deepseek-harness) 的插件，解决 DSH 能力分散、难以按场景批量切换的问题。它把插件、Skill、MCP 放在同一个界面里管理，并允许你定义多个“角色”，每个角色装配不同的能力组合；切换角色时，DSH 会自动启用/停用/装载/卸载对应能力。
 
-- **统一 Catalog**：聚合 `ctx.loader`、`ctx.skills` 与 MCP 插件实例。
-- **角色管理**：创建、编辑、删除、复制角色，为角色装配插件/Skill/MCP。
-- **角色切换**：计算差异并动态启用/停用/装载/卸载，失败回滚。
-- **持久化**：角色与激活状态保存到 `~/.dsh/kabutack/roles.json`，重启自动恢复。
-- **Web UI**：DSH 设置页 `settings.section` 中的 Kabutack 面板。
+---
 
-## 文档
+## ✨ 功能
 
-- [docs/00-project-brief.md](docs/00-project-brief.md) — AI Coding 开工简报
-- [docs/01-product-requirements.md](docs/01-product-requirements.md) — 产品需求
-- [docs/02-architecture.md](docs/02-architecture.md) — 架构设计
-- [docs/03-data-model.md](docs/03-data-model.md) — 数据模型
-- [docs/04-api-spec.md](docs/04-api-spec.md) — API 规格
-- [docs/05-implementation-tasks.md](docs/05-implementation-tasks.md) — 实施任务
-- [docs/06-dsh-extension-reference.md](docs/06-dsh-extension-reference.md) — DSH 扩展点参考
-- [docs/07-testing-and-acceptance.md](docs/07-testing-and-acceptance.md) — 测试与验收
-- [docs/08-open-questions.md](docs/08-open-questions.md) — 开放问题
+- **统一能力目录**
+  - 在一个页面中浏览 DSH 插件、Skill、MCP
+  - 插件 / Skill / MCP 分页展示，支持搜索
+  - 查看运行状态、启用状态、调用策略
 
-## 一键安装（其他机器 / 原生 DSH）
+- **能力管理**
+  - 插件：启用、停用、卸载（受管外部插件）
+  - Skill：启用、停用、卸载到回收站
+  - MCP：添加、编辑、删除、启停
 
-### 方式一：本地仓库
+- **角色化动态装载**
+  - 自定义角色，为角色装配插件 / Skill / MCP
+  - 创建角色时默认勾选 DSH 原始自带插件和全部 Skill
+  - 一键切换角色，自动执行差异装载/卸载
+  - 失败自动回滚，重复激活幂等
+
+- **持久化与恢复**
+  - 角色与激活状态保存到 `~/.dsh/kabutack/roles.json`
+  - DSH 重启后自动恢复上次激活的角色
+  - 原子写入，损坏自动备份
+
+- **安全与可观测**
+  - 禁止卸载 DSH 官方插件和 Kabutack 自身
+  - 关键操作写入审计日志 `~/.dsh/kabutack/audit.log`
+  - 所有 API 仅本机回环访问
+
+---
+
+## 🚀 快速开始
+
+### 环境要求
+
+- DSH 已安装并至少运行过一次
+- 默认 profile：`web`（可通过参数指定）
+
+### 一键安装（推荐）
+
+#### 方式一：从本地仓库安装
 
 ```powershell
 # Windows PowerShell
@@ -36,7 +57,7 @@ powershell -ExecutionPolicy Bypass -File install.ps1
 ./install.sh
 ```
 
-默认安装到 DSH 的 `web` profile；如需指定 profile：
+指定 profile：
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File install.ps1 -Profile my-profile
@@ -46,9 +67,9 @@ powershell -ExecutionPolicy Bypass -File install.ps1 -Profile my-profile
 ./install.sh my-profile
 ```
 
-安装后重启 DSH 即可加载 Kabutack。
+安装完成后**重启 DSH**，在设置页即可看到 **Kabutack**。
 
-### 方式二：远程一行命令（仓库发布到 GitHub 后）
+#### 方式二：远程一行命令（仓库发布到 GitHub 后）
 
 ```powershell
 powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/<owner>/<repo>/main/bootstrap.ps1 | iex"
@@ -58,36 +79,121 @@ powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.c
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/<owner>/<repo>/main/bootstrap.sh)"
 ```
 
-> 说明：`bootstrap.ps1` / `bootstrap.sh` 会先把仓库 clone 到临时目录，再调用 `install.ps1` / `install.sh` 完成安装。
-> 发布前请把脚本里的 `https://github.com/<owner>/<repo>.git` 替换为真实仓库地址。
+> 发布前请将 `bootstrap.ps1` / `bootstrap.sh` 中的仓库地址替换为真实地址。
 
-## 开发构建与注入
+### 手动安装（可选）
+
+如果你熟悉 DSH profile 结构，也可以手动完成：
+
+1. 将 `lib/` 与 `package.json` 复制到 `~/.dsh/kabutack`
+2. 在 `~/.dsh/profiles/<profile>/node_modules/@dsh-external/` 下创建指向该目录的 junction/symlink
+3. 在 profile 的 `package.json` 中：
+   - `dependencies` 添加 `"@dsh-external/kabutack": "link:<path>"`
+   - `dsh.profile.bundles` 添加 `"@dsh-external/kabutack"`
+4. 重启 DSH
+
+---
+
+## 🎮 使用指南
+
+1. 打开 DSH 设置 → **Kabutack**
+2. 在 **能力目录** 中浏览插件 / Skill / MCP
+3. 在 **角色** 中点击 **创建角色**
+4. 在弹窗中命名角色、选择能力组合并保存
+5. 点击 **激活** 即可一键切换到该角色
+
+---
+
+## 🧩 为什么选择 Kabutack？
+
+- **一个界面管三类能力**：不再需要在插件设置、Skill 文件、MCP 配置之间来回切换。
+- **角色即场景**：开发、写作、研究等场景可以保存为角色，随时一键切换。
+- **无需重启**：角色切换通过 DSH 运行时动态装载/卸载，不打断当前工作流。
+- **安全优先**：官方插件和自身受保护，危险操作有确认和审计日志。
+- **本地优先**：所有数据保存在本地 `~/.dsh/kabutack/`，不依赖外部服务。
+- **开箱即用**：仓库自带预构建 `lib/`，clone 后无需编译即可安装。
+
+---
+
+## 🛠 开发
 
 ```bash
+# 安装依赖（如需要）
+npm install
+
+# 类型检查
+npm run typecheck
+
 # 构建 host + client
 npm run build
 npm run build:client
 
-# 在 DSH 注入器环境中
-dev_build_plugin E:/coding/Kabutack
-dev_inject_plugin E:/coding/Kabutack
+# 单元测试
+npm test
 ```
 
-## 当前状态
+在 DSH 注入器环境中：
 
-- [x] Phase 0：脚手架、构建、注入、热重载
-- [x] Phase 1：Catalog 快照（插件/Skill/MCP）
-- [x] Phase 2：角色 CRUD 与 `roles.json` 持久化
-- [x] Phase 3：插件启停与角色激活引擎
-- [x] Phase 4：MCP 管理（增删改查、启停、角色内自动创建/移除）
-- [x] Phase 5：技能管理（文件系统技能 frontmatter 启停/卸载）
-- [x] Phase 6：完整角色切换、重启恢复、审计日志
-- [x] Phase 7：安全保护（官方/自身插件不可卸载）
-- [x] 基础单元测试（`npm test`，11 个用例）
+```bash
+dev_build_plugin E:/coding/Kabutack
+dev_inject_plugin E:/coding/Kabutack
+dev_reload_package kabutack
+```
 
-## 说明
+---
 
-- 插件包名：`@dsh-external/kabutack`
-- 数据目录：`~/.dsh/kabutack/`
-- HTTP API：`/kabutack/api`
-- UI 入口：DSH 设置 → Kabutack
+## 📁 项目结构
+
+```text
+Kabutack/
+├── src/
+│   ├── index.ts          # Host 插件入口
+│   ├── api.ts            # HTTP API
+│   ├── catalog.ts        # 插件/Skill/MCP 统一快照
+│   ├── roles.ts          # 角色持久化
+│   ├── apply.ts          # 角色激活/回滚引擎
+│   ├── loader-ops.ts     # DSH Loader 操作
+│   ├── mcp-ops.ts        # MCP 管理
+│   ├── skills-ops.ts     # Skill 管理
+│   └── client/           # 设置页 UI
+├── lib/                  # 预构建产物（安装时直接使用）
+├── scripts/              # 构建脚本
+├── test/                 # 单元测试
+├── docs/                 # 详细设计文档
+├── install.ps1           # Windows 一键安装
+├── install.sh            # Unix 一键安装
+├── bootstrap.ps1         # 远程安装引导（PowerShell）
+└── bootstrap.sh          # 远程安装引导（Bash）
+```
+
+---
+
+## 📚 文档
+
+- [项目简报](docs/00-project-brief.md)
+- [产品需求](docs/01-product-requirements.md)
+- [架构设计](docs/02-architecture.md)
+- [数据模型](docs/03-data-model.md)
+- [API 规格](docs/04-api-spec.md)
+- [实施任务](docs/05-implementation-tasks.md)
+- [DSH 扩展点参考](docs/06-dsh-extension-reference.md)
+- [测试与验收](docs/07-testing-and-acceptance.md)
+- [开放问题](docs/08-open-questions.md)
+
+---
+
+## 🤝 贡献
+
+欢迎提交 Issue 和 Pull Request。
+
+开发前请先阅读 `docs/` 下的设计文档，并确保：
+
+- `npm run typecheck` 通过
+- `npm test` 全部通过
+- 涉及 UI 时运行 `npm run build:client`
+
+---
+
+## 📄 License
+
+BSD-3-Clause
