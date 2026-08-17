@@ -396,9 +396,13 @@ function createKabutackPanel(): { element: HTMLElement; dispose: () => void } {
             descInput.placeholder = '描述（可选）'
             if (role) descInput.value = role.description || ''
 
-            const selectedPlugins = new Set<string>(role?.plugins || [])
-            const selectedSkills = new Set<string>(role?.skills || [])
-            const selectedMcps = new Set<string>(role?.mcps || [])
+            // 创建角色时，默认勾选 DSH 原始自带的插件与全部 Skill；编辑时保留原选择
+            const originalPlugins = catalog.plugins
+              .filter((p: any) => !p.moduleName.startsWith('@dsh-external/'))
+              .map((p: any) => p.moduleName)
+            const selectedPlugins = new Set<string>(role ? role.plugins || [] : originalPlugins)
+            const selectedSkills = new Set<string>(role ? role.skills || [] : catalog.skills.map((s: any) => s.name))
+            const selectedMcps = new Set<string>(role ? role.mcps || [] : [])
 
             const makeGrid = (items: Array<{ id: string; label: string }>, selected: Set<string>): HTMLDivElement => {
               const grid = el('div', 'kbt-check-grid')
