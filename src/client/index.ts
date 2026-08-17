@@ -68,6 +68,12 @@ const styles = `
 .kbt-editor{border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-3);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px}
 .kbt-check-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:6px 12px;max-height:240px;overflow:auto;padding:4px 2px}
 .kbt-check-grid label{display:flex;gap:6px;align-items:center;cursor:pointer;color:var(--dsw-alias-label-secondary);font-size:13px}
+.kbt-section-title{font-size:14px;font-weight:600;color:var(--dsw-alias-label-primary);margin:14px 0 6px}
+.kbt-modal-overlay{position:fixed;inset:0;background:var(--dsw-alias-bg-mask-1);backdrop-filter:var(--dsw-mask-blur);display:flex;align-items:center;justify-content:center;z-index:1000}
+.kbt-modal{background:var(--dsw-alias-bg-layer-2);box-shadow:var(--dsw-shadow-lv3);border-radius:16px;width:640px;max-width:calc(100vw - 32px);max-height:calc(100vh - 48px);display:flex;flex-direction:column;overflow:hidden}
+.kbt-modal-header{padding:16px 20px 8px;font-size:16px;font-weight:600;color:var(--dsw-alias-label-primary)}
+.kbt-modal-body{padding:8px 20px 16px;overflow-y:auto;display:flex;flex-direction:column;gap:10px}
+.kbt-modal-footer{padding:12px 20px;border-top:1px solid var(--dsw-alias-border-l2);display:flex;justify-content:flex-end;gap:8px}
 `
 
 function createKabutackPanel(): { element: HTMLElement; dispose: () => void } {
@@ -114,173 +120,209 @@ function createKabutackPanel(): { element: HTMLElement; dispose: () => void } {
             catalogPanel.textContent = ''
             const toolbar = el('div', 'kbt-toolbar')
             const search = el('input', 'kbt-input') as HTMLInputElement
-            search.placeholder = '搜索名称…'
-            const filter = el('select', 'kbt-input') as HTMLSelectElement
-            for (const [value, label] of [['all', '全部'], ['plugin', '插件'], ['skill', 'Skill'], ['mcp', 'MCP']] as const) {
-              const opt = el('option', undefined, label) as HTMLOptionElement
-              opt.value = value
-              filter.append(opt)
-            }
+            search.placeholder = '搜索插件 / Skill / MCP…'
             const refresh = el('button', 'kbt-btn ghost', '刷新')
-            toolbar.append(search, filter, refresh)
+            toolbar.append(search, refresh)
             catalogPanel.append(toolbar)
 
-            // MCP 添加表单
-            const mcpForm = el('div', 'kbt-toolbar')
-            const mcpServer = el('input', 'kbt-input') as HTMLInputElement
-            mcpServer.placeholder = 'MCP serverName'
-            const mcpTransport = el('select', 'kbt-input') as HTMLSelectElement
-            for (const [value, label] of [['stdio', 'stdio'], ['streamable-http', 'streamable-http']] as const) {
-              const opt = el('option', undefined, label) as HTMLOptionElement
-              opt.value = value
-              mcpTransport.append(opt)
-            }
-            const mcpCommand = el('input', 'kbt-input') as HTMLInputElement
-            mcpCommand.placeholder = 'command (stdio)'
-            const mcpUrl = el('input', 'kbt-input') as HTMLInputElement
-            mcpUrl.placeholder = 'url (http)'
-            const mcpArgs = el('input', 'kbt-input') as HTMLInputElement
-            mcpArgs.placeholder = 'args，逗号分隔'
-            const mcpAdd = el('button', 'kbt-btn', '添加 MCP')
-            mcpAdd.addEventListener('click', () => {
-              const serverName = mcpServer.value.trim()
-              if (!serverName) return say('MCP serverName 必填', true)
-              const transport = mcpTransport.value as 'stdio' | 'streamable-http'
-              const body: any = { serverName, transport }
-              if (transport === 'stdio') {
-                if (!mcpCommand.value.trim()) return say('stdio 需要 command', true)
-                body.command = mcpCommand.value.trim()
-                body.args = mcpArgs.value.split(',').map((s) => s.trim()).filter(Boolean)
-              } else {
-                if (!mcpUrl.value.trim()) return say('streamable-http 需要 url', true)
-                body.url = mcpUrl.value.trim()
-              }
-              mcpAdd.disabled = true
-              api('/mcps', { method: 'POST', body: JSON.stringify(body) })
-                .then(() => { mcpServer.value = mcpCommand.value = mcpUrl.value = mcpArgs.value = ''; return refreshData() })
-                .catch((e) => say(String(e), true))
-                .finally(() => { mcpAdd.disabled = false })
-            })
-            mcpForm.append(mcpServer, mcpTransport, mcpCommand, mcpUrl, mcpArgs, mcpAdd)
-            catalogPanel.append(mcpForm)
-
-            const list = el('ul', 'kbt-list')
-            catalogPanel.append(list)
-
             const draw = (): void => {
+              for (const node of Array.from(catalogPanel.querySelectorAll('.kbt-section'))) node.remove()
               const q = search.value.trim().toLowerCase()
-              const kind = filter.value
-              list.textContent = ''
-              const items: any[] = [
-                ...catalog.plugins.map((p: any) => ({ ...p, type: 'plugin', title: p.moduleName, stateText: p.enabled ? '运行中' : '已停用', stateCls: p.enabled ? 'on' : 'off' })),
-                ...catalog.skills.map((s: any) => ({ ...s, type: 'skill', title: s.name, stateText: (s.modelInvocable ? 'M' : '-') + '/' + (s.userInvocable ? 'U' : '-'), stateCls: s.modelInvocable || s.userInvocable ? 'on' : 'off' })),
-                ...catalog.mcps.map((m: any) => ({ ...m, type: 'mcp', title: m.serverName, stateText: m.enabled ? '运行中' : '已停用', stateCls: m.enabled ? 'on' : 'off' })),
-              ].filter((x) => (kind === 'all' || x.type === kind) && (!q || x.title.toLowerCase().includes(q)))
+              const matches = (title: string): boolean => !q || title.toLowerCase().includes(q)
 
-              if (!items.length) {
-                list.append(el('li', 'kbt-item', '（无匹配项）'))
-                return
-              }
+              const renderItems = (items: any[], kind: string): HTMLUListElement => {
+                const list = el('ul', 'kbt-list')
+                if (!items.length) {
+                  list.append(el('li', 'kbt-item', '（无匹配项）'))
+                  return list
+                }
+                for (const item of items) {
+                  const li = el('li', 'kbt-item')
+                  const name = el('span', 'name', item.title)
+                  const st = el('span', 'st ' + item.stateCls, item.stateText)
+                  li.append(name, st)
 
-              for (const item of items) {
-                const li = el('li', 'kbt-item')
-                const name = el('span', 'name', item.title)
-                const st = el('span', 'st ' + item.stateCls, item.stateText)
-                li.append(name, st)
+                  if (kind === 'plugin') {
+                    const btnEnable = el('button', 'kbt-btn ghost', item.enabled ? '停用' : '启用')
+                    btnEnable.addEventListener('click', () => {
+                      btnEnable.disabled = true
+                      api(`/capabilities/plugin/${encodeURIComponent(item.entryId)}/${item.enabled ? 'disable' : 'enable'}`, { method: 'POST' })
+                        .then(() => refreshData())
+                        .catch((e) => say(String(e), true))
+                        .finally(() => { btnEnable.disabled = false })
+                    })
+                    li.append(btnEnable)
+                    if (item.managed) {
+                      const del = el('button', 'kbt-btn danger', '卸载')
+                      del.addEventListener('click', () => {
+                        if (!confirm('确认卸载插件 ' + item.moduleName + '？')) return
+                        del.disabled = true
+                        api(`/capabilities/plugin/${encodeURIComponent(item.moduleName)}`, { method: 'DELETE' })
+                          .then(() => refreshData())
+                          .catch((e) => say(String(e), true))
+                          .finally(() => { del.disabled = false })
+                      })
+                      li.append(del)
+                    }
+                  }
 
-                if (item.type === 'plugin') {
-                  const btnEnable = el('button', 'kbt-btn ghost', item.enabled ? '停用' : '启用')
-                  btnEnable.addEventListener('click', () => {
-                    btnEnable.disabled = true
-                    api(`/capabilities/plugin/${encodeURIComponent(item.entryId)}/${item.enabled ? 'disable' : 'enable'}`, { method: 'POST' })
-                      .then(() => refreshData())
-                      .catch((e) => say(String(e), true))
-                      .finally(() => { btnEnable.disabled = false })
-                  })
-                  li.append(btnEnable)
-                  if (item.managed) {
+                  if (kind === 'mcp') {
+                    const btnEnable = el('button', 'kbt-btn ghost', item.enabled ? '停用' : '启用')
+                    btnEnable.addEventListener('click', () => {
+                      btnEnable.disabled = true
+                      api(`/capabilities/mcp/${encodeURIComponent(item.serverName)}/${item.enabled ? 'disable' : 'enable'}`, { method: 'POST' })
+                        .then(() => refreshData())
+                        .catch((e) => say(String(e), true))
+                        .finally(() => { btnEnable.disabled = false })
+                    })
+                    li.append(btnEnable)
                     const del = el('button', 'kbt-btn danger', '卸载')
                     del.addEventListener('click', () => {
-                      if (!confirm('确认卸载插件 ' + item.moduleName + '？')) return
+                      if (!confirm('确认卸载 MCP ' + item.serverName + '？')) return
                       del.disabled = true
-                      api(`/capabilities/plugin/${encodeURIComponent(item.moduleName)}`, { method: 'DELETE' })
+                      api(`/capabilities/mcp/${encodeURIComponent(item.serverName)}`, { method: 'DELETE' })
                         .then(() => refreshData())
                         .catch((e) => say(String(e), true))
                         .finally(() => { del.disabled = false })
                     })
                     li.append(del)
                   }
-                }
 
-                if (item.type === 'mcp') {
-                  const btnEnable = el('button', 'kbt-btn ghost', item.enabled ? '停用' : '启用')
-                  btnEnable.addEventListener('click', () => {
-                    btnEnable.disabled = true
-                    api(`/capabilities/mcp/${encodeURIComponent(item.serverName)}/${item.enabled ? 'disable' : 'enable'}`, { method: 'POST' })
-                      .then(() => refreshData())
-                      .catch((e) => say(String(e), true))
-                      .finally(() => { btnEnable.disabled = false })
-                  })
-                  li.append(btnEnable)
-                  const del = el('button', 'kbt-btn danger', '卸载')
-                  del.addEventListener('click', () => {
-                    if (!confirm('确认卸载 MCP ' + item.serverName + '？')) return
-                    del.disabled = true
-                    api(`/capabilities/mcp/${encodeURIComponent(item.serverName)}`, { method: 'DELETE' })
-                      .then(() => refreshData())
-                      .catch((e) => say(String(e), true))
-                      .finally(() => { del.disabled = false })
-                  })
-                  li.append(del)
-                }
-
-                if (item.type === 'skill') {
-                  const btnEnable = el('button', 'kbt-btn ghost', (item.modelInvocable || item.userInvocable) ? '停用' : '启用')
-                  btnEnable.addEventListener('click', () => {
-                    btnEnable.disabled = true
-                    const enabled = !(item.modelInvocable || item.userInvocable)
-                    api(`/capabilities/skill/${encodeURIComponent(item.name)}/${enabled ? 'enable' : 'disable'}`, { method: 'POST' })
-                      .then(() => refreshData())
-                      .catch((e) => say(String(e), true))
-                      .finally(() => { btnEnable.disabled = false })
-                  })
-                  li.append(btnEnable)
-                  if (item.managed) {
-                    const del = el('button', 'kbt-btn danger', '卸载')
-                    del.addEventListener('click', () => {
-                      if (!confirm('确认卸载技能 ' + item.name + '？将移动到回收站。')) return
-                      del.disabled = true
-                      api(`/capabilities/skill/${encodeURIComponent(item.name)}`, { method: 'DELETE' })
+                  if (kind === 'skill') {
+                    const btnEnable = el('button', 'kbt-btn ghost', (item.modelInvocable || item.userInvocable) ? '停用' : '启用')
+                    btnEnable.addEventListener('click', () => {
+                      btnEnable.disabled = true
+                      const enabled = !(item.modelInvocable || item.userInvocable)
+                      api(`/capabilities/skill/${encodeURIComponent(item.name)}/${enabled ? 'enable' : 'disable'}`, { method: 'POST' })
                         .then(() => refreshData())
                         .catch((e) => say(String(e), true))
-                        .finally(() => { del.disabled = false })
+                        .finally(() => { btnEnable.disabled = false })
                     })
-                    li.append(del)
+                    li.append(btnEnable)
+                    if (item.managed) {
+                      const del = el('button', 'kbt-btn danger', '卸载')
+                      del.addEventListener('click', () => {
+                        if (!confirm('确认卸载技能 ' + item.name + '？将移动到回收站。')) return
+                        del.disabled = true
+                        api(`/capabilities/skill/${encodeURIComponent(item.name)}`, { method: 'DELETE' })
+                          .then(() => refreshData())
+                          .catch((e) => say(String(e), true))
+                          .finally(() => { del.disabled = false })
+                      })
+                      li.append(del)
+                    }
                   }
-                }
 
-                if (item.desc) li.append(el('div', 'desc', item.desc))
-                list.append(li)
+                  if (item.desc) li.append(el('div', 'desc', item.desc))
+                  list.append(li)
+                }
+                return list
               }
+
+              // 插件
+              const pluginSection = el('div', 'kbt-section')
+              pluginSection.append(el('h4', 'kbt-section-title', '插件'))
+              const pluginItems = catalog.plugins
+                .map((p: any) => ({ ...p, title: p.moduleName, stateText: p.enabled ? '运行中' : '已停用', stateCls: p.enabled ? 'on' : 'off' }))
+                .filter((x: any) => matches(x.title))
+              pluginSection.append(renderItems(pluginItems, 'plugin'))
+              catalogPanel.append(pluginSection)
+
+              // Skill
+              const skillSection = el('div', 'kbt-section')
+              skillSection.append(el('h4', 'kbt-section-title', 'Skill'))
+              const skillItems = catalog.skills
+                .map((s: any) => ({ ...s, title: s.name, stateText: (s.modelInvocable ? 'M' : '-') + '/' + (s.userInvocable ? 'U' : '-'), stateCls: s.modelInvocable || s.userInvocable ? 'on' : 'off' }))
+                .filter((x: any) => matches(x.title))
+              skillSection.append(renderItems(skillItems, 'skill'))
+              catalogPanel.append(skillSection)
+
+              // MCP
+              const mcpSection = el('div', 'kbt-section')
+              const mcpHead = el('div', 'kbt-toolbar')
+              mcpHead.append(el('h4', 'kbt-section-title', 'MCP'))
+              const addMcpBtn = el('button', 'kbt-btn ghost', '添加 MCP')
+              addMcpBtn.addEventListener('click', () => openMcpModal())
+              mcpHead.append(addMcpBtn)
+              mcpSection.append(mcpHead)
+              const mcpItems = catalog.mcps
+                .map((m: any) => ({ ...m, title: m.serverName, stateText: m.enabled ? '运行中' : '已停用', stateCls: m.enabled ? 'on' : 'off' }))
+                .filter((x: any) => matches(x.title))
+              mcpSection.append(renderItems(mcpItems, 'mcp'))
+              catalogPanel.append(mcpSection)
             }
 
             search.addEventListener('input', draw)
-            filter.addEventListener('change', draw)
             refresh.addEventListener('click', refreshData)
             draw()
+          }
+
+          // ── MCP 添加弹窗 ──
+          const openMcpModal = (): void => {
+            const overlay = el('div', 'kbt-modal-overlay')
+            const modal = el('div', 'kbt-modal')
+            const header = el('div', 'kbt-modal-header', '添加 MCP')
+            const body = el('div', 'kbt-modal-body')
+            const footer = el('div', 'kbt-modal-footer')
+
+            const serverInput = el('input', 'kbt-input') as HTMLInputElement
+            serverInput.placeholder = 'serverName'
+            const transportSelect = el('select', 'kbt-input') as HTMLSelectElement
+            for (const [value, label] of [['stdio', 'stdio'], ['streamable-http', 'streamable-http']] as const) {
+              const opt = el('option', undefined, label) as HTMLOptionElement
+              opt.value = value
+              transportSelect.append(opt)
+            }
+            const commandInput = el('input', 'kbt-input') as HTMLInputElement
+            commandInput.placeholder = 'command (stdio)'
+            const urlInput = el('input', 'kbt-input') as HTMLInputElement
+            urlInput.placeholder = 'url (streamable-http)'
+            const argsInput = el('input', 'kbt-input') as HTMLInputElement
+            argsInput.placeholder = 'args，逗号分隔'
+
+            body.append(serverInput, transportSelect, commandInput, urlInput, argsInput)
+
+            const close = (): void => overlay.remove()
+            const saveBtn = el('button', 'kbt-btn', '添加')
+            const cancelBtn = el('button', 'kbt-btn ghost', '取消')
+            saveBtn.addEventListener('click', () => {
+              const serverName = serverInput.value.trim()
+              if (!serverName) return say('MCP serverName 必填', true)
+              const transport = transportSelect.value as 'stdio' | 'streamable-http'
+              const payload: any = { serverName, transport }
+              if (transport === 'stdio') {
+                if (!commandInput.value.trim()) return say('stdio 需要 command', true)
+                payload.command = commandInput.value.trim()
+                payload.args = argsInput.value.split(',').map((s) => s.trim()).filter(Boolean)
+              } else {
+                if (!urlInput.value.trim()) return say('streamable-http 需要 url', true)
+                payload.url = urlInput.value.trim()
+              }
+              saveBtn.disabled = true
+              api('/mcps', { method: 'POST', body: JSON.stringify(payload) })
+                .then(() => { close(); return refreshData() })
+                .catch((e) => say(String(e), true))
+                .finally(() => { saveBtn.disabled = false })
+            })
+            cancelBtn.addEventListener('click', close)
+            overlay.addEventListener('click', (e) => { if (e.target === overlay) close() })
+
+            footer.append(cancelBtn, saveBtn)
+            modal.append(header, body, footer)
+            overlay.append(modal)
+            document.body.appendChild(overlay)
+            serverInput.focus()
           }
 
           // ── Roles 渲染 ──
           const renderRoles = (): void => {
             rolesPanel.textContent = ''
             const toolbar = el('div', 'kbt-toolbar')
-            const nameInput = el('input', 'kbt-input') as HTMLInputElement
-            nameInput.placeholder = '新角色名称'
             const createBtn = el('button', 'kbt-btn', '创建角色')
-            toolbar.append(nameInput, createBtn)
+            toolbar.append(createBtn)
             rolesPanel.append(toolbar)
 
-            const list = el('div')
+            const list = el('div', 'kbt-list')
             rolesPanel.append(list)
 
             const draw = (): void => {
@@ -305,7 +347,7 @@ function createKabutackPanel(): { element: HTMLElement; dispose: () => void } {
                     .finally(() => { activate.disabled = false })
                 })
                 const edit = el('button', 'kbt-btn ghost', '编辑')
-                edit.addEventListener('click', () => openEditor(role.id))
+                edit.addEventListener('click', () => openRoleModal(role.id))
                 const del = el('button', 'kbt-btn danger', '删除')
                 del.addEventListener('click', () => {
                   if (!confirm('确认删除角色 ' + role.name + '？')) return
@@ -322,103 +364,89 @@ function createKabutackPanel(): { element: HTMLElement; dispose: () => void } {
               }
             }
 
-            createBtn.addEventListener('click', () => {
-              const name = nameInput.value.trim()
-              if (!name) return say('请输入角色名称', true)
-              createBtn.disabled = true
-              api('/roles', { method: 'POST', body: JSON.stringify({ name }) })
-                .then(() => { nameInput.value = ''; return refreshData() })
-                .catch((e) => say(String(e), true))
-                .finally(() => { createBtn.disabled = false })
-            })
-
+            createBtn.addEventListener('click', () => openRoleModal())
             draw()
           }
 
-          // ── 角色编辑器 ──
-          const openEditor = (roleId: string): void => {
-            const role = roles.find((r) => r.id === roleId)
-            if (!role) return
-            const editor = el('div', 'kbt-editor')
-            const h4 = el('h4', undefined, '编辑角色：' + role.name)
+          // ── 角色创建/编辑弹窗 ──
+          const openRoleModal = (roleId?: string): void => {
+            const role = roleId ? roles.find((r) => r.id === roleId) : undefined
+            const overlay = el('div', 'kbt-modal-overlay')
+            const modal = el('div', 'kbt-modal')
+            const header = el('div', 'kbt-modal-header', role ? '编辑角色' : '创建角色')
+            const body = el('div', 'kbt-modal-body')
+            const footer = el('div', 'kbt-modal-footer')
+
             const nameInput = el('input', 'kbt-input') as HTMLInputElement
-            nameInput.value = role.name
+            nameInput.placeholder = '角色名称'
+            if (role) nameInput.value = role.name
             const descInput = el('input', 'kbt-input') as HTMLInputElement
-            descInput.value = role.description || ''
-            descInput.placeholder = '描述'
+            descInput.placeholder = '描述（可选）'
+            if (role) descInput.value = role.description || ''
 
-            const selectedPlugins = new Set(role.plugins || [])
-            const selectedSkills = new Set(role.skills || [])
-            const selectedMcps = new Set(role.mcps || [])
+            const selectedPlugins = new Set<string>(role?.plugins || [])
+            const selectedSkills = new Set<string>(role?.skills || [])
+            const selectedMcps = new Set<string>(role?.mcps || [])
 
-            const pluginGrid = el('div', 'kbt-check-grid')
-            for (const p of catalog.plugins) {
-              const label = el('label')
-              const cb = el('input') as HTMLInputElement
-              cb.type = 'checkbox'
-              cb.checked = selectedPlugins.has(p.moduleName)
-              cb.addEventListener('change', () => {
-                if (cb.checked) selectedPlugins.add(p.moduleName)
-                else selectedPlugins.delete(p.moduleName)
-              })
-              label.append(cb, document.createTextNode(p.moduleName))
-              pluginGrid.append(label)
+            const makeGrid = (items: Array<{ id: string; label: string }>, selected: Set<string>): HTMLDivElement => {
+              const grid = el('div', 'kbt-check-grid')
+              if (!items.length) {
+                grid.append(el('span', 'kbt-msg', '（暂无可用项）'))
+                return grid
+              }
+              for (const item of items) {
+                const label = el('label')
+                const cb = el('input') as HTMLInputElement
+                cb.type = 'checkbox'
+                cb.checked = selected.has(item.id)
+                cb.addEventListener('change', () => {
+                  if (cb.checked) selected.add(item.id)
+                  else selected.delete(item.id)
+                })
+                label.append(cb, document.createTextNode(item.label))
+                grid.append(label)
+              }
+              return grid
             }
 
-            const skillGrid = el('div', 'kbt-check-grid')
-            for (const s of catalog.skills) {
-              const label = el('label')
-              const cb = el('input') as HTMLInputElement
-              cb.type = 'checkbox'
-              cb.checked = selectedSkills.has(s.name)
-              cb.addEventListener('change', () => {
-                if (cb.checked) selectedSkills.add(s.name)
-                else selectedSkills.delete(s.name)
-              })
-              label.append(cb, document.createTextNode(s.name))
-              skillGrid.append(label)
-            }
+            body.append(nameInput, descInput)
+            body.append(el('h4', 'kbt-section-title', '插件'))
+            body.append(makeGrid(catalog.plugins.map((p: any) => ({ id: p.moduleName, label: p.moduleName })), selectedPlugins))
+            body.append(el('h4', 'kbt-section-title', 'Skill'))
+            body.append(makeGrid(catalog.skills.map((s: any) => ({ id: s.name, label: s.name })), selectedSkills))
+            body.append(el('h4', 'kbt-section-title', 'MCP'))
+            body.append(makeGrid(catalog.mcps.map((m: any) => ({ id: m.serverName, label: m.serverName })), selectedMcps))
 
-            const mcpGrid = el('div', 'kbt-check-grid')
-            for (const m of catalog.mcps) {
-              const label = el('label')
-              const cb = el('input') as HTMLInputElement
-              cb.type = 'checkbox'
-              cb.checked = selectedMcps.has(m.serverName)
-              cb.addEventListener('change', () => {
-                if (cb.checked) selectedMcps.add(m.serverName)
-                else selectedMcps.delete(m.serverName)
-              })
-              label.append(cb, document.createTextNode(m.serverName))
-              mcpGrid.append(label)
-            }
-
-            const saveBtn = el('button', 'kbt-btn', '保存')
-            const cancelBtn = el('button', 'kbt-btn ghost', '关闭')
+            const close = (): void => overlay.remove()
+            const saveBtn = el('button', 'kbt-btn', role ? '保存' : '创建')
+            const cancelBtn = el('button', 'kbt-btn ghost', '取消')
             saveBtn.addEventListener('click', () => {
+              const name = nameInput.value.trim()
+              if (!name) return say('请输入角色名称', true)
+              const payload = {
+                name,
+                description: descInput.value.trim(),
+                plugins: [...selectedPlugins],
+                skills: [...selectedSkills],
+                mcps: [...selectedMcps],
+              }
               saveBtn.disabled = true
-              api(`/roles/${encodeURIComponent(roleId)}`, {
-                method: 'PUT',
-                body: JSON.stringify({
-                  name: nameInput.value,
-                  description: descInput.value,
-                  plugins: [...selectedPlugins],
-                  skills: [...selectedSkills],
-                  mcps: [...selectedMcps],
-                }),
-              })
-                .then(() => { editor.remove(); return refreshData() })
+              const request = role
+                ? api(`/roles/${encodeURIComponent(role.id)}`, { method: 'PUT', body: JSON.stringify(payload) })
+                : api('/roles', { method: 'POST', body: JSON.stringify(payload) })
+              request
+                .then(() => { close(); return refreshData() })
                 .catch((e) => say(String(e), true))
                 .finally(() => { saveBtn.disabled = false })
             })
-            cancelBtn.addEventListener('click', () => editor.remove())
+            cancelBtn.addEventListener('click', close)
+            overlay.addEventListener('click', (e) => { if (e.target === overlay) close() })
 
-            editor.append(h4, nameInput, descInput)
-            editor.append(el('h4', undefined, '插件'), pluginGrid)
-            editor.append(el('h4', undefined, 'Skill'), skillGrid)
-            editor.append(el('h4', undefined, 'MCP'), mcpGrid)
-            editor.append(el('div', 'kbt-toolbar'), saveBtn, cancelBtn)
-            rolesPanel.append(editor)
+            footer.append(cancelBtn, saveBtn)
+            modal.append(header, body, footer)
+            overlay.append(modal)
+            document.body.appendChild(overlay)
+            nameInput.focus()
           }
 
           const refreshData = async (): Promise<void> => {
