@@ -30,7 +30,7 @@ type AppContext = Context & {
     loader: any;
     skills: any;
     webServer: any;
-    logger?: any;
+    logger: any;
 };
 export declare function apply(ctx: AppContext, config: Config): void;
 export {};

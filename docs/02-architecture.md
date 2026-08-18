@@ -44,10 +44,17 @@ flowchart LR
 ```text
 kabutack/
 ├── package.json
-├── tsconfig.json
-├── tsdown.config.ts
+├── tsconfig.json               # solution root（引用 Host/Client aggregate）
+├── tsconfig.base.json          # Host 共享编译选项
+├── tsconfig.base.client.json   # Client 浏览器编译选项
+├── tsconfig.host.json          # Host aggregate
+├── tsconfig.client.json        # Client aggregate
 ├── scripts/
-│   └── build.sh
+│   ├── build-host.mjs          # Host 构建（Node 跨平台）
+│   ├── build.sh                # Host 构建（Bash 备用）
+│   ├── build-client.mjs        # Client 构建
+│   ├── typecheck.mjs           # 类型检查
+│   └── typecheck.sh            # 类型检查（Bash）
 ├── cordis.patch.yml            # 可选：patch 装配入口
 ├── src/
 │   ├── index.ts                # 插件入口：inject/apply/config/schema

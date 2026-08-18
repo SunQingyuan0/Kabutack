@@ -15,7 +15,7 @@
 
 - **hybrid 插件**：Host 侧服务 + Client 侧 `settings.section` UI。
 - 语言：TypeScript。
-- 构建：`scripts/build.sh` + `tsdown`（client）。
+- 构建：`scripts/build-host.mjs`（Host，Node 跨平台）+ `scripts/build-client.mjs`（Client，基于 DSH checkout tsc）。
 - 接入：`dev_build_plugin` → `dev_inject_plugin`（开发期）；后续可用 `dev_install_package` 持久装配。
 
 ## 必须遵守的 DSH 约定
@@ -53,6 +53,7 @@
 
 ## 关键文档链接
 
+- [开发指南](development.md)
 - [01 产品需求](01-product-requirements.md)
 - [02 架构](02-architecture.md)
 - [03 数据模型](03-data-model.md)

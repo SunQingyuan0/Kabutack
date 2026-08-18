@@ -23,15 +23,11 @@ function findCheckout() {
   return null
 }
 
+const localTsc = join(root, 'node_modules', '.bin', process.platform === 'win32' ? 'tsc.cmd' : 'tsc')
 const checkout = findCheckout()
-if (!checkout) {
-  console.error('build-client: cannot locate dsh checkout (set DSH_CHECKOUT)')
-  process.exit(1)
-}
-
-const tsc = join(checkout, 'node_modules', '.bin', process.platform === 'win32' ? 'tsc.cmd' : 'tsc')
-if (!existsSync(tsc)) {
-  console.error('build-client: tsc not found at', tsc)
+const tsc = existsSync(localTsc) ? localTsc : checkout ? join(checkout, 'node_modules', '.bin', process.platform === 'win32' ? 'tsc.cmd' : 'tsc') : null
+if (!tsc || !existsSync(tsc)) {
+  console.error('build-client: cannot locate tsc (run pnpm install, or set DSH_CHECKOUT to a dsh checkout)')
   process.exit(1)
 }
 

@@ -14,7 +14,7 @@
   - `scripts/build.sh`
   - `src/index.ts`
   - `src/client/index.ts`
-  - `tsdown.config.ts`
+  - `scripts/build-client.mjs`
 - [ ] `package.json` 关键字段：
   - `name: "@dsh-external/kabutack"`
   - `type: "module"`, `main: "./lib/index.js"`

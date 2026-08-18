@@ -18,7 +18,7 @@ import { registerKabutackApi } from './api.js'
 import { createMcpEntry, findEntryByModuleName, findEntryByServerName, isEnabled, removeEntry, setPluginEnabled } from './loader-ops.js'
 
 export const name = '@dsh-external/kabutack'
-export const inject = ['loader', 'skills', 'webServer']
+export const inject = ['loader', 'skills', 'webServer', 'logger']
 
 export interface Config {
   dataDir: string
@@ -36,7 +36,7 @@ type AppContext = Context & {
   loader: any
   skills: any
   webServer: any
-  logger?: any
+  logger: any
 }
 
 export function apply(ctx: AppContext, config: Config): void {
@@ -126,5 +126,5 @@ export function apply(ctx: AppContext, config: Config): void {
     }, config.restoreDelayMs)
   }
 
-  ctx.logger?.info?.('[kabutack] 已启动，dataDir=%s', dataDir)
+  ctx.logger.info('[kabutack] 已启动，dataDir=%s', dataDir)
 }

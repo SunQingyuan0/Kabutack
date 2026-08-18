@@ -115,20 +115,29 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/SunQingyuan0/Kabutack/ma
 
 ## 🛠 开发
 
-```bash
-# 安装依赖（如需要）
-npm install
+本项目按 [DSH 官方开发文档](https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/development.md) 的插件规范组织；本仓库内也维护了一份本地开发指南：[docs/development.md](docs/development.md)。
 
-# 类型检查
-npm run typecheck
+```bash
+# 推荐使用 pnpm（与 DSH 官方一致）；npm 同样可用
+pnpm install
+
+# 类型检查（自动使用 DSH checkout 的 tsc，检查 Host + Client）
+pnpm run typecheck
 
 # 构建 host + client
-npm run build
-npm run build:client
+pnpm run build:all
 
 # 单元测试
-npm test
+pnpm test
+
+# 提交前检查
+pnpm run check
+
+# 完整本地门禁（check + 全量构建）
+pnpm run check:all
 ```
+
+> 说明：`build-host.mjs` / `build-client.mjs` / `typecheck.mjs`（或对应的 `.sh` 版本）会优先使用本地 `node_modules/.bin/tsc`，缺失时自动探测 `DSH_CHECKOUT` 或常见路径（如 `~/dsh-harness`）。不需要先 `npm install` 也能在已有 DSH 开发环境中完成构建。
 
 在 DSH 注入器环境中：
 
@@ -145,30 +154,45 @@ dev_reload_package kabutack
 ```text
 Kabutack/
 ├── src/
-│   ├── index.ts          # Host 插件入口
-│   ├── api.ts            # HTTP API
+│   ├── index.ts          # Host 插件入口（name/inject/apply/Config）
+│   ├── types.ts          # 共享领域类型
+│   ├── api.ts            # HTTP API（/kabutack/api）
 │   ├── catalog.ts        # 插件/Skill/MCP 统一快照
 │   ├── roles.ts          # 角色持久化
 │   ├── apply.ts          # 角色激活/回滚引擎
 │   ├── loader-ops.ts     # DSH Loader 操作
 │   ├── mcp-ops.ts        # MCP 管理
 │   ├── skills-ops.ts     # Skill 管理
-│   └── client/           # 设置页 UI
-├── lib/                  # 预构建产物（安装时直接使用）
+│   ├── audit.ts          # 审计日志
+│   └── client/           # 设置页 UI（settings.section）
+├── lib/                  # 预构建产物（安装时直接使用，仓库内保留以便一键安装）
 ├── cordis.patch.yml      # DSH bundle 装配入口
-├── scripts/              # 构建脚本
+├── scripts/
+│   ├── build-host.mjs    # Host 构建（Node 跨平台，优先本地 tsc，回退 DSH checkout）
+│   ├── build.sh          # Host 构建（Bash 备用版本）
+│   ├── build-client.mjs  # Client 构建（DSH checkout tsc + ModuleLoader 外壳）
+│   ├── typecheck.mjs     # 类型检查（DSH checkout tsc，跨平台）
+│   └── typecheck.sh      # 类型检查（Bash 版本）
 ├── test/                 # 单元测试
-├── docs/                 # 详细设计文档
+├── docs/                 # 产品/设计/开发文档
+├── tsconfig.json         # TypeScript solution root（引用 Host/Client aggregate）
+├── tsconfig.base.json    # Host 侧共享编译选项
+├── tsconfig.base.client.json # Client 侧浏览器编译选项
+├── tsconfig.host.json    # Host aggregate
+├── tsconfig.client.json  # Client aggregate
 ├── install.ps1           # Windows 一键安装
 ├── install.sh            # Unix 一键安装
 ├── bootstrap.ps1         # 远程安装引导（PowerShell）
-└── bootstrap.sh          # 远程安装引导（Bash）
+├── bootstrap.sh          # 远程安装引导（Bash）
+├── LICENSE               # BSD-3-Clause
+└── package.json          # DSH bundle 插件元数据
 ```
 
 ---
 
 ## 📚 文档
 
+- [开发指南（本地）](docs/development.md)
 - [项目简报](docs/00-project-brief.md)
 - [产品需求](docs/01-product-requirements.md)
 - [架构设计](docs/02-architecture.md)
@@ -187,9 +211,8 @@ Kabutack/
 
 开发前请先阅读 `docs/` 下的设计文档，并确保：
 
-- `npm run typecheck` 通过
-- `npm test` 全部通过
-- 涉及 UI 时运行 `npm run build:client`
+- `pnpm run check` 通过（typecheck + test）
+- 涉及构建或 UI 时运行 `pnpm run build:all`
 
 ---
 

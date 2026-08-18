@@ -66,6 +66,6 @@ if [ -n "$STD_SCHEMA" ]; then
   " "$STD_SCHEMA/node_modules/@standard-schema/spec"
 fi
 
-echo "=== Compiling src → lib ==="
-"$TSC" -p tsconfig.json
+echo "=== Compiling Host src → lib ==="
+"$TSC" -p tsconfig.host.json
 echo "=== Build complete ==="

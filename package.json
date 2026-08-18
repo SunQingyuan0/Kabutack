@@ -11,6 +11,10 @@
     "cordis.patch.yml"
   ],
   "license": "BSD-3-Clause",
+  "packageManager": "pnpm@11.7.0",
+  "engines": {
+    "node": ">=22.19"
+  },
   "peerDependencies": {
     "@deepseek-ai/dsh-tools": ">=0.0.1-rc <2",
     "cordis": ">=4.0.0-rc <5",
@@ -19,14 +23,17 @@
   },
   "devDependencies": {
     "@types/node": "^24.13.3",
-    "typescript": "^5.9.0",
-    "tsdown": "^0.22.14"
+    "typescript": "^5.9.0"
   },
   "scripts": {
-    "build": "bash scripts/build.sh",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build": "npm run build:host",
+    "build:host": "node scripts/build-host.mjs",
     "build:client": "node scripts/build-client.mjs",
-    "test": "node test/run.mjs"
+    "build:all": "npm run build:host && npm run build:client",
+    "typecheck": "node scripts/typecheck.mjs",
+    "test": "node test/run.mjs",
+    "check": "npm run typecheck && npm test",
+    "check:all": "npm run check && npm run build:all"
   },
   "exports": {
     ".": {

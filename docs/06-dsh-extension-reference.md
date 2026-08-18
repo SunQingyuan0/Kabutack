@@ -2,19 +2,28 @@
 
 本文汇总实现 `kabutack` 所需的 DSH 插件开发知识，基于当前环境（`@deepseek-ai/*` rc.6 系列）实测可用的 API 与惯例。
 
+> 官方开发文档：[deepseek-harness/docs/development.md](https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/development.md)
+> 本地开发流程见 [development.md](development.md)。
+
 ## 1. 插件包结构
 
 一个 DSH bundle 插件通常包含：
 
 ```text
 package.json
-tsconfig.json
-scripts/build.sh
+tsconfig.json               # solution root：引用 Host/Client aggregate
+tsconfig.base.json          # Host 共享编译选项
+tsconfig.base.client.json   # Client 浏览器编译选项
+tsconfig.host.json          # Host aggregate
+tsconfig.client.json        # Client aggregate
+scripts/build-host.mjs      # 推荐：Host 构建（Node 跨平台）
+scripts/build.sh            # 可选：Host 构建（Bash）
+scripts/build-client.mjs    # 可选：client 构建
+scripts/typecheck.mjs       # 可选：类型检查
 src/index.ts
-src/client/index.ts   # 可选：浏览器侧
-tsdown.config.ts      # 可选：client 构建
-cordis.patch.yml      # 可选：patch 装配
-lib/                  # 构建产物
+src/client/index.ts         # 可选：浏览器侧
+cordis.patch.yml            # 可选：patch 装配
+lib/                        # 构建产物
 ```
 
 `package.json` 关键字段：
@@ -53,9 +62,13 @@ lib/                  # 构建产物
     "schemastery": "^3.18.0"
   },
   "scripts": {
-    "build": "bash scripts/build.sh",
-    "build:client": "tsdown",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "build": "npm run build:host",
+    "build:host": "node scripts/build-host.mjs",
+    "build:client": "node scripts/build-client.mjs",
+    "build:all": "npm run build:host && npm run build:client",
+    "typecheck": "node scripts/typecheck.mjs",
+    "test": "node test/run.mjs",
+    "check": "npm run typecheck && npm test"
   }
 }
 ```
@@ -68,7 +81,9 @@ lib/                  # 构建产物
 import type { Context } from 'cordis'
 import { Schema } from 'schemastery'
 
-export const name = 'kabutack'
+// 实践中 name 通常直接使用包名（如 @dsh-external/kabutack），
+// 也可使用短名 'kabutack'；关键是保持 cordis.patch.yml 的 id/name 与之一致。
+export const name = '@dsh-external/kabutack'
 
 export const inject = ['loader', 'skills', 'webServer', 'logger']
 
@@ -342,6 +357,8 @@ set -euo pipefail
 # tsc 编译 host 到 lib/
 # 如有 client，运行 npm run build:client
 ```
+
+本项目同时提供 `scripts/typecheck.mjs`（跨平台，推荐）与 `scripts/typecheck.sh`，用同一套 DSH checkout 探测逻辑执行 `tsc --noEmit`。
 
 ## 10. 常见坑
 
