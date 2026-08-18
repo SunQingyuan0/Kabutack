@@ -18,7 +18,9 @@ import { registerKabutackApi } from './api.js'
 import { createMcpEntry, findEntryByModuleName, findEntryByServerName, isEnabled, removeEntry, setPluginEnabled } from './loader-ops.js'
 
 export const name = '@dsh-external/kabutack'
-export const inject = ['loader', 'skills', 'webServer', 'logger']
+// 注意:logger 是 cordis fork 的内置属性(Context 构造器直接赋值),不是 provide()
+// 注册的服务,不能也不应出现在 inject 里——放进去会导致插件永远 pending。
+export const inject = ['loader', 'skills', 'webServer']
 
 export interface Config {
   dataDir: string
