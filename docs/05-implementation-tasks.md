@@ -16,7 +16,7 @@
   - `src/client/index.ts`
   - `scripts/build-client.mjs`
 - [ ] `package.json` 关键字段：
-  - `name: "@dsh-external/kabutack"`
+  - `name: "@galactus/kabutack"`
   - `type: "module"`, `main: "./lib/index.js"`
   - `dsh.client.inject: ["@deepseek-ai/dsh-client-runtime", "@deepseek-ai/dsh-client-ui-slots"]`
   - peerDependencies: `@deepseek-ai/dsh-tools`, `cordis`, `schemastery`（版本范围参考现有插件）

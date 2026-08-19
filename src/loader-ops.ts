@@ -72,7 +72,7 @@ export function isManagedPlugin(moduleName: string): boolean {
 
 export function isProtectedPlugin(moduleName: string): boolean {
   return (
-    moduleName === '@dsh-external/kabutack' ||
+    moduleName === '@galactus/kabutack' ||
     moduleName === '@dsh-external/dsh-super-injector' ||
     moduleName === '@dsh-external/dsh-mode-boost' ||
     moduleName.startsWith('@deepseek-ai/dsh-base') ||

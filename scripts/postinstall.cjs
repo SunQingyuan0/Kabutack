@@ -18,7 +18,7 @@ const fs = require('fs')
 const os = require('os')
 const path = require('path')
 
-const PACKAGE_NAME = '@dsh-external/kabutack'
+const PACKAGE_NAME = '@galactus/kabutack'
 
 function readJson(file) {
   let text = fs.readFileSync(file, 'utf8')
@@ -77,7 +77,7 @@ function findProfileFromDshHome() {
 }
 
 function main() {
-  // __dirname is usually <profile>/node_modules/@dsh-external/kabutack/scripts.
+  // __dirname is usually <profile>/node_modules/@galactus/kabutack/scripts.
   // With pnpm/bun the package may be symlinked from a content-addressable store,
   // so also check INIT_CWD (the directory where the user ran npm/bun).
   const packageRoot = path.resolve(__dirname, '..')

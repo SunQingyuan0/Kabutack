@@ -1,5 +1,5 @@
 /**
- * @dsh-external/kabutack — client 设置页（settings.section slot）。
+ * @galactus/kabutack — client 设置页（settings.section slot）。
  * 构建：npm run build:client（scripts/build-client.mjs，产物 lib/client.js，ModuleLoader.load 注册）。
  * 通信：同源 fetch → host webServer API（/kabutack/api）
  */
@@ -515,9 +515,9 @@ export function apply(ctx: ClientContext): void {
   ctx.effect(() => ctx.slots.inject('settings.section', () =>
     ctx.slots.register({
       name: 'settings.section',
-      id: '@dsh-external/kabutack',
+      id: '@galactus/kabutack',
       order: 60,
       label: () => 'Kabutack',
     }, KabutackSection),
-  ), '@dsh-external/kabutack: settings page')
+  ), '@galactus/kabutack: settings page')
 }

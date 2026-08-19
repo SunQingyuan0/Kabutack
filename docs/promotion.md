@@ -31,7 +31,7 @@ npm publish
 发布后检查：
 
 ```bash
-npm view @dsh-external/kabutack
+npm view @galactus/kabutack
 ```
 
 > 注意：`@dsh-external` scope 必须属于你的 npm 账号；如果无权发布，需要把包名改为你拥有的 scope（如 `@sunqingyuan0/kabutack`），并同步修改 README 安装命令。
@@ -69,8 +69,8 @@ Kabutack 做的事很简单：把能力组合定义成“角色”，比如“�
 安装：
 ```bash
 cd ~/.dsh/profiles/web
-bun add @dsh-external/kabutack
-# 或 npm install @dsh-external/kabutack
+bun add @galactus/kabutack
+# 或 npm install @galactus/kabutack
 ```
 
 项目：https://github.com/SunQingyuan0/Kabutack
@@ -87,7 +87,7 @@ bun add @dsh-external/kabutack
 
 ## 发布检查清单
 
-- [ ] npm 已发布，`npm view @dsh-external/kabutack` 可查
+- [ ] npm 已发布，`npm view @galactus/kabutack` 可查
 - [ ] GitHub Release v0.0.1 已创建
 - [ ] Awesome PR 已提交（上面 3 个）
 - [ ] X / Reddit / V2EX / 掘金各发一篇

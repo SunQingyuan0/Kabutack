@@ -4,7 +4,7 @@
 
 ## 任务
 
-在 `E:\coding\Kabutack` 下实现 DSH 插件 `@dsh-external/kabutack`：
+在 `E:\coding\Kabutack` 下实现 DSH 插件 `@galactus/kabutack`：
 
 - 统一管理 DSH 插件、Skill、MCP（浏览/启用/停用/卸载）。
 - 支持自定义角色，为角色装配不同能力，保存后一键切换，DSH 运行时动态装载/卸载。

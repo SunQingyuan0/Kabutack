@@ -1,5 +1,5 @@
 /**
- * @dsh-external/kabutack — 统一管理 DSH 插件/Skill/MCP，支持角色化动态装载与切换。
+ * @galactus/kabutack — 统一管理 DSH 插件/Skill/MCP，支持角色化动态装载与切换。
  *
  * Host 侧：
  * - 读取/写入 ~/.dsh/kabutack/roles.json
@@ -19,7 +19,7 @@ import { createRoleManagerService } from './service.js'
 export type { RoleManagerService, KabutackServices } from './service.js'
 import { createMcpEntry, findEntryByModuleName, findEntryByServerName, isEnabled, removeEntry, setPluginEnabled } from './loader-ops.js'
 
-export const name = '@dsh-external/kabutack'
+export const name = '@galactus/kabutack'
 // 注意:logger 是 cordis fork 的内置属性(Context 构造器直接赋值),不是 provide()
 // 注册的服务,不能也不应出现在 inject 里——放进去会导致插件永远 pending。
 export const inject = ['loader', 'skills', 'webServer']

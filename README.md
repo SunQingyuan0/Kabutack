@@ -50,14 +50,14 @@ Kabutack 是一个面向 [DSH](https://github.com/deepseek-ai/deepseek-harness) 
 
 ```bash
 cd ~/.dsh/profiles/web
-bun add @dsh-external/kabutack
-# 或 npm install @dsh-external/kabutack
+bun add @galactus/kabutack
+# 或 npm install @galactus/kabutack
 ```
 
 不想 `cd` 也可以用 npm 直接指定目录：
 
 ```bash
-npm install --prefix ~/.dsh/profiles/web @dsh-external/kabutack
+npm install --prefix ~/.dsh/profiles/web @galactus/kabutack
 ```
 
 > 包内 `postinstall` 会自动写入 `dsh.profile.bundles`，完成后**重启 DSH** 即可看到 **Kabutack**。
@@ -91,8 +91,8 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/SunQingyuan0/Kabutack/ma
 1. 将 `lib/`、`package.json` 与 `cordis.patch.yml` 复制到 `~/.dsh/kabutack`
 2. 在 `~/.dsh/profiles/<profile>/node_modules/@dsh-external/` 下创建指向该目录的 junction/symlink
 3. 在 profile 的 `package.json` 中：
-   - `dependencies` 添加 `"@dsh-external/kabutack": "link:<path>"`
-   - `dsh.profile.bundles` 添加 `"@dsh-external/kabutack"`
+   - `dependencies` 添加 `"@galactus/kabutack": "link:<path>"`
+   - `dsh.profile.bundles` 添加 `"@galactus/kabutack"`
 4. 重启 DSH
 
 ---

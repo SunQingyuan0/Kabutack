@@ -30,7 +30,7 @@ lib/                        # 构建产物
 
 ```json
 {
-  "name": "@dsh-external/kabutack",
+  "name": "@galactus/kabutack",
   "version": "0.1.0",
   "type": "module",
   "main": "./lib/index.js",
@@ -81,9 +81,9 @@ lib/                        # 构建产物
 import type { Context } from 'cordis'
 import { Schema } from 'schemastery'
 
-// 实践中 name 通常直接使用包名（如 @dsh-external/kabutack），
+// 实践中 name 通常直接使用包名（如 @galactus/kabutack），
 // 也可使用短名 'kabutack'；关键是保持 cordis.patch.yml 的 id/name 与之一致。
-export const name = '@dsh-external/kabutack'
+export const name = '@galactus/kabutack'
 
 export const inject = ['loader', 'skills', 'webServer', 'logger']
 

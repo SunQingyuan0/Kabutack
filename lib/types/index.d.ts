@@ -1,5 +1,5 @@
 /**
- * @dsh-external/kabutack — 统一管理 DSH 插件/Skill/MCP，支持角色化动态装载与切换。
+ * @galactus/kabutack — 统一管理 DSH 插件/Skill/MCP，支持角色化动态装载与切换。
  *
  * Host 侧：
  * - 读取/写入 ~/.dsh/kabutack/roles.json
@@ -11,7 +11,7 @@
 import type { Context } from 'cordis';
 import z from 'schemastery';
 export type { RoleManagerService, KabutackServices } from './service.js';
-export declare const name = "@dsh-external/kabutack";
+export declare const name = "@galactus/kabutack";
 export declare const inject: string[];
 export interface Config {
     dataDir: string;

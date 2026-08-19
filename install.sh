@@ -57,11 +57,11 @@ const file = process.argv[1];
 const target = process.argv[2];
 const pkg = JSON.parse(fs.readFileSync(file, 'utf8'));
 pkg.dependencies = pkg.dependencies || {};
-pkg.dependencies['@dsh-external/kabutack'] = 'link:' + target;
+pkg.dependencies['@galactus/kabutack'] = 'link:' + target;
 pkg.dsh = pkg.dsh || {};
 pkg.dsh.profile = pkg.dsh.profile || {};
 pkg.dsh.profile.bundles = pkg.dsh.profile.bundles || [];
-if (!pkg.dsh.profile.bundles.includes('@dsh-external/kabutack')) pkg.dsh.profile.bundles.push('@dsh-external/kabutack');
+if (!pkg.dsh.profile.bundles.includes('@galactus/kabutack')) pkg.dsh.profile.bundles.push('@galactus/kabutack');
 fs.writeFileSync(file, JSON.stringify(pkg, null, 2) + '\n');
 " "$PACKAGE_FILE_WIN" "$TARGET_DIR_WIN"
 

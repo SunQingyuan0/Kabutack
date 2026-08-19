@@ -156,10 +156,10 @@ dev_reload_package kabutack
 - npm/bun 安装（发布到 npm 后）：
   ```bash
   cd ~/.dsh/profiles/web
-  bun add @dsh-external/kabutack
-  # 或 npm install @dsh-external/kabutack
+  bun add @galactus/kabutack
+  # 或 npm install @galactus/kabutack
   # 不想 cd 时，npm 可以直接：
-  # npm install --prefix ~/.dsh/profiles/web @dsh-external/kabutack
+  # npm install --prefix ~/.dsh/profiles/web @galactus/kabutack
   ```
   包内 `postinstall` 会自动写入 `dsh.profile.bundles`。
 - 本地一键安装：`./install.sh [profile]` 或 `powershell -File install.ps1 -Profile <profile>`。

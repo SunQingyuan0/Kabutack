@@ -11,7 +11,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
-const pluginId = '@dsh-external/kabutack'
+const pluginId = '@galactus/kabutack'
 
 function findCheckout() {
   if (process.env.DSH_CHECKOUT && existsSync(join(process.env.DSH_CHECKOUT, 'packages'))) {

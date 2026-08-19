@@ -63,7 +63,7 @@ $pkg = Get-Content $packageFile -Raw | ConvertFrom-Json
 if (-not $pkg.PSObject.Properties['dependencies'] -or $null -eq $pkg.dependencies) {
   $pkg | Add-Member -NotePropertyName 'dependencies' -NotePropertyValue ([pscustomobject]@{}) -Force
 }
-$pkg.dependencies | Add-Member -NotePropertyName '@dsh-external/kabutack' -NotePropertyValue "link:$TargetDir" -Force
+$pkg.dependencies | Add-Member -NotePropertyName '@galactus/kabutack' -NotePropertyValue "link:$TargetDir" -Force
 
 if (-not $pkg.PSObject.Properties['dsh'] -or $null -eq $pkg.dsh) {
   $pkg | Add-Member -NotePropertyName 'dsh' -NotePropertyValue ([pscustomobject]@{}) -Force
@@ -76,8 +76,8 @@ if (-not $pkg.dsh.profile.PSObject.Properties['bundles'] -or $null -eq $pkg.dsh.
 }
 
 $bundles = @($pkg.dsh.profile.bundles | Where-Object { $_ -ne $null })
-if ($bundles -notcontains '@dsh-external/kabutack') {
-  $bundles += '@dsh-external/kabutack'
+if ($bundles -notcontains '@galactus/kabutack') {
+  $bundles += '@galactus/kabutack'
 }
 $pkg.dsh.profile.bundles = $bundles
 
