@@ -153,9 +153,18 @@ dev_reload_package kabutack
 
 ## 安装与发布
 
+- npm/bun 安装（发布到 npm 后）：
+  ```bash
+  cd ~/.dsh/profiles/web
+  bun add @dsh-external/kabutack
+  # 或 npm install @dsh-external/kabutack
+  # 不想 cd 时，npm 可以直接：
+  # npm install --prefix ~/.dsh/profiles/web @dsh-external/kabutack
+  ```
+  包内 `postinstall` 会自动写入 `dsh.profile.bundles`。
 - 本地一键安装：`./install.sh [profile]` 或 `powershell -File install.ps1 -Profile <profile>`。
-- 远程安装：`bootstrap.sh` / `bootstrap.ps1` 会先 clone 仓库再执行安装脚本。
-- 发布：使用 `dev_build_plugin` 产出 tgz，再通过 `dev_release_plugin` 发布 GitHub Release。
+- 远程安装：`bootstrap.sh` / `bootstrap.ps1` 会下载仓库源码压缩包再执行安装脚本（无需 Git）。
+- 发布 npm：先 `npm run build:all`（或确认 `lib/` 已是最新），再 `npm publish`（已配置 `publishConfig.access = public`）；GitHub Release 使用 `dev_build_plugin` 产出 tgz，再通过 `dev_release_plugin` 发布。
 
 ## 常见问题
 

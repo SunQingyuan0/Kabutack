@@ -40,11 +40,8 @@ $link = Join-Path $extDir 'kabutack'
 if (Test-Path $link) {
   $item = Get-Item $link
   if ($item.LinkType) {
-    if ($env:OS -like 'Windows*') {
-      cmd /c rmdir "$link"
-    } else {
-      Remove-Item $link -Force
-    }
+    # Remove the link itself, never its target.
+    Remove-Item $link -Force
   } else {
     Remove-Item $link -Recurse -Force
   }
@@ -56,19 +53,39 @@ if ($env:OS -like 'Windows*') {
   New-Item -ItemType SymbolicLink -Path $link -Target $TargetDir | Out-Null
 }
 
+
 # 3. Register bundle in profile package.json
 $pkg = Get-Content $packageFile -Raw | ConvertFrom-Json
-if (-not $pkg.dependencies) { $pkg.dependencies = @{} }
-$pkg.dependencies.'@dsh-external/kabutack' = "link:$TargetDir"
-if (-not $pkg.dsh) { $pkg.dsh = @{} }
-if (-not $pkg.dsh.profile) { $pkg.dsh.profile = @{} }
-if (-not $pkg.dsh.profile.bundles) { $pkg.dsh.profile.bundles = @() }
-$bundles = @($pkg.dsh.profile.bundles)
+
+# ConvertFrom-Json produces PSCustomObject, whose new properties cannot be
+# assigned with dot notation. Use Add-Member for missing keys, and preserve
+# any existing dependencies/dsh sections.
+if (-not $pkg.PSObject.Properties['dependencies'] -or $null -eq $pkg.dependencies) {
+  $pkg | Add-Member -NotePropertyName 'dependencies' -NotePropertyValue ([pscustomobject]@{}) -Force
+}
+$pkg.dependencies | Add-Member -NotePropertyName '@dsh-external/kabutack' -NotePropertyValue "link:$TargetDir" -Force
+
+if (-not $pkg.PSObject.Properties['dsh'] -or $null -eq $pkg.dsh) {
+  $pkg | Add-Member -NotePropertyName 'dsh' -NotePropertyValue ([pscustomobject]@{}) -Force
+}
+if (-not $pkg.dsh.PSObject.Properties['profile'] -or $null -eq $pkg.dsh.profile) {
+  $pkg.dsh | Add-Member -NotePropertyName 'profile' -NotePropertyValue ([pscustomobject]@{}) -Force
+}
+if (-not $pkg.dsh.profile.PSObject.Properties['bundles'] -or $null -eq $pkg.dsh.profile.bundles) {
+  $pkg.dsh.profile | Add-Member -NotePropertyName 'bundles' -NotePropertyValue @() -Force
+}
+
+$bundles = @($pkg.dsh.profile.bundles | Where-Object { $_ -ne $null })
 if ($bundles -notcontains '@dsh-external/kabutack') {
   $bundles += '@dsh-external/kabutack'
 }
 $pkg.dsh.profile.bundles = $bundles
-$pkg | ConvertTo-Json -Depth 10 | Set-Content -Path $packageFile -Encoding UTF8
+
+$json = $pkg | ConvertTo-Json -Depth 10
+# Use UTF-8 without BOM; Windows PowerShell's Set-Content -Encoding UTF8 writes a
+# BOM that Node.js JSON.parse cannot handle and would break DSH profile loading.
+[System.IO.File]::WriteAllText($packageFile, $json + [Environment]::NewLine, (New-Object System.Text.UTF8Encoding($false)))
+
 
 Write-Host ""
 Write-Host "Kabutack installed successfully."

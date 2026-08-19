@@ -2,15 +2,22 @@
   "name": "@dsh-external/kabutack",
   "version": "0.0.1",
   "description": "统一管理 DSH 插件/Skill/MCP，支持角色化动态装载与切换",
-  "private": true,
   "type": "module",
   "main": "./lib/index.js",
   "types": "./lib/types/index.d.ts",
   "files": [
     "lib",
-    "cordis.patch.yml"
+    "cordis.patch.yml",
+    "scripts/postinstall.cjs"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "license": "BSD-3-Clause",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SunQingyuan0/Kabutack.git"
+  },
   "packageManager": "pnpm@11.7.0",
   "engines": {
     "node": ">=22.19"
@@ -26,6 +33,7 @@
     "typescript": "^5.9.0"
   },
   "scripts": {
+    "postinstall": "node scripts/postinstall.cjs",
     "build": "npm run build:host",
     "build:host": "node scripts/build-host.mjs",
     "build:client": "node scripts/build-client.mjs",
