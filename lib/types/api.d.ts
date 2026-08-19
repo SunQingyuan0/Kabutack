@@ -1,9 +1,3 @@
-import type { RoleManagerStore } from './types.js';
+import type { RoleManagerService } from './service.js';
 import type { Audit } from './audit.js';
-export interface KabutackServices {
-    ctx: any;
-    getStore(): RoleManagerStore;
-    save(store: RoleManagerStore): void;
-    audit: Audit;
-}
-export declare function registerKabutackApi(services: KabutackServices): () => void;
+export declare function registerKabutackApi(ctx: any, service: RoleManagerService, audit?: Audit): () => void;

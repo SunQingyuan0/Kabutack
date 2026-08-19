@@ -5,6 +5,7 @@ import { join } from 'node:path'
 import { loadStore, saveStore, createRole, updateRole, deleteRole, setActiveRole, duplicateRole } from '../lib/roles.js'
 import { editFrontmatter } from '../lib/skills-ops.js'
 import { buildPlan, executePlan } from '../lib/apply.js'
+import { createRoleManagerService } from '../lib/service.js'
 
 function tempDir() {
   return mkdtempSync(join(tmpdir(), 'kabutack-test-'))
@@ -96,6 +97,29 @@ run('updateRole replaces arrays', () => {
     const role = createRole(store, { name: 'Dev', plugins: ['a'] })
     updateRole(store, role.id, { plugins: ['b', 'b', 'a'] })
     assert.deepEqual(store.roles[0].plugins, ['b', 'a'])
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+run('roleManager service exposes role CRUD', () => {
+  const dir = tempDir()
+  try {
+    let store = loadStore(dir)
+    const audit = { log() {} }
+    const service = createRoleManagerService({
+      ctx: {},
+      getStore: () => store,
+      save: (s) => { store = s; saveStore(s, dir) },
+      audit,
+    })
+    const role = service.createRole({ name: 'Svc' })
+    assert.equal(service.listRoleDetails().length, 1)
+    assert.equal(service.getRole(role.id)?.name, 'Svc')
+    service.updateRole(role.id, { plugins: ['a'] })
+    assert.deepEqual(service.getRole(role.id)?.plugins, ['a'])
+    service.deleteRole(role.id)
+    assert.equal(service.listRoleDetails().length, 0)
   } finally {
     rmSync(dir, { recursive: true, force: true })
   }

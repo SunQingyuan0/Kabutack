@@ -2,7 +2,7 @@
 
 ## 1. Host 内部服务：`ctx.roleManager`
 
-> v1 实现以 HTTP API 为主；`ctx.roleManager` 服务接口作为后续扩展目标，当前可先由 `api.ts` 内的 services 闭包承担。
+> `ctx.roleManager` 服务已由 `src/service.ts` 实现并通过 `ctx.provide('roleManager', service)` 注册；HTTP API 是它的薄适配层。
 
 插件通过 `inject: ['loader', 'skills', 'webServer', 'logger']` 提供 `ctx.roleManager` 服务（使用 Cordis `Service` 或普通对象均可；建议声明为 `Service` 便于其他插件注入）。
 
@@ -10,11 +10,13 @@
 
 ```ts
 interface RoleManagerService {
-  // Catalog
+  // Catalog & state
   listCatalog(): Promise<CatalogSnapshot>
+  getState(): { activeRoleId: string | null; lastActivation?: RoleManagerStore['lastActivation'] }
 
   // Roles
   listRoles(): RoleSummary[]
+  listRoleDetails(): Role[]
   getRole(id: string): Role | undefined
   createRole(input: CreateRoleInput): Role
   updateRole(id: string, patch: UpdateRoleInput): Role
@@ -23,12 +25,13 @@ interface RoleManagerService {
 
   // Activation
   activateRole(id: string): Promise<ApplyResult>
-  deactivate(): Promise<ApplyResult>
-  getActiveRoleId(): string | null
+  deactivate(): { previous: string | null }
 
   // Capability operations
-  setPluginEnabled(entryId: string, enabled: boolean): Promise<void>
+  setPluginEnabled(entryId: string, enabled: boolean): Promise<{ entryId: string; moduleName: string; enabled: boolean }>
+  removePluginByModuleName(moduleName: string): Promise<void>
   removeManagedCapability(kind: 'plugin' | 'mcp', id: string): Promise<void>
+  setMcpEnabled(serverName: string, enabled: boolean): Promise<void>
 
   // MCP definitions
   addMcp(def: McpDefinition): Promise<McpItem>
@@ -36,7 +39,8 @@ interface RoleManagerService {
   removeMcp(serverName: string): Promise<void>
 
   // Skills
-  setSkillInvocation(name: string, opts: { modelInvocable?: boolean; userInvocable?: boolean }): Promise<void>
+  setSkillInvocation(name: string, opts: { modelInvocable?: boolean; userInvocable?: boolean }): Promise<{ path?: string; modelInvocable?: boolean; userInvocable?: boolean }>
+  removeSkill(name: string): Promise<string>
 }
 ```
 

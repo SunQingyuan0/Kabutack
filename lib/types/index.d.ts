@@ -10,6 +10,7 @@
  */
 import type { Context } from 'cordis';
 import z from 'schemastery';
+export type { RoleManagerService, KabutackServices } from './service.js';
 export declare const name = "@dsh-external/kabutack";
 export declare const inject: string[];
 export interface Config {
@@ -33,4 +34,3 @@ type AppContext = Context & {
     logger: any;
 };
 export declare function apply(ctx: AppContext, config: Config): void;
-export {};
