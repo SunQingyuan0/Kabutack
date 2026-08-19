@@ -153,16 +153,25 @@ dev_reload_package kabutack
 
 ## 安装与发布
 
-- npm/bun 安装（发布到 npm 后）：
+- 官方安装（推荐，发布到 npm 后）：
+  ```bash
+  dsh plugin --profile web add @galactus/kabutack
+  ```
+- 本地开发安装（未发布时）：
+  ```bash
+  dsh plugin --profile web add /path/to/Kabutack
+  # 或在仓库目录内
+  dsh plugin --profile web add .
+  ```
+  `dsh plugin` 会转发给 pnpm，并自动把包名写入 profile 的 `dsh.profile.bundles`。
+- 其他包管理器安装（可选）：
   ```bash
   cd ~/.dsh/profiles/web
   bun add @galactus/kabutack
   # 或 npm install @galactus/kabutack
-  # 不想 cd 时，npm 可以直接：
-  # npm install --prefix ~/.dsh/profiles/web @galactus/kabutack
   ```
   包内 `postinstall` 会自动写入 `dsh.profile.bundles`。
-- 本地一键安装：`./install.sh [profile]` 或 `powershell -File install.ps1 -Profile <profile>`。
+- 本地一键脚本：`./install.sh [profile]` 或 `powershell -File install.ps1 -Profile <profile>`；脚本内部会调用官方 `dsh plugin` 完成注册。
 - 远程安装：`bootstrap.sh` / `bootstrap.ps1` 会下载仓库源码压缩包再执行安装脚本（无需 Git）。
 - 发布 npm：先 `npm run build:all`（或确认 `lib/` 已是最新），再 `npm publish`（已配置 `publishConfig.access = public`）；GitHub Release 使用 `dev_build_plugin` 产出 tgz，再通过 `dev_release_plugin` 发布。
 

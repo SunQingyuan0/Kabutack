@@ -44,9 +44,30 @@ Kabutack 是一个面向 [DSH](https://github.com/deepseek-ai/deepseek-harness) 
 
 ## 🚀 快速开始
 
-### 安装
+### 安装（官方推荐）
 
-需要已安装 DSH，默认 profile 为 `web`。在 DSH profile 目录执行：
+需要已安装 DSH，且 `pnpm` 在 `PATH` 中（`dsh plugin` 会把参数转发给 pnpm）。默认 profile 为 `web`。
+
+已发布到 npm 后，使用包名安装：
+
+```bash
+dsh plugin --profile web add @galactus/kabutack
+```
+
+本地仓库开发 / 未发布时，直接添加插件目录：
+
+```bash
+# 在仓库目录外使用绝对路径（Windows 示例：E:/coding/Kabutack）
+dsh plugin --profile web add /path/to/Kabutack
+# 在仓库目录内也可以使用相对路径
+dsh plugin --profile web add .
+```
+
+> `dsh plugin` 会自动把包写入 profile 的 `dsh.profile.bundles`，完成后**重启 DSH** 即可看到 **Kabutack**。
+
+### 其他包管理器安装（可选）
+
+如果你更习惯直接操作 profile，也可以在 DSH profile 目录执行：
 
 ```bash
 cd ~/.dsh/profiles/web
@@ -60,9 +81,9 @@ bun add @galactus/kabutack
 npm install --prefix ~/.dsh/profiles/web @galactus/kabutack
 ```
 
-> 包内 `postinstall` 会自动写入 `dsh.profile.bundles`，完成后**重启 DSH** 即可看到 **Kabutack**。
+> 包内 `postinstall` 会自动写入 `dsh.profile.bundles`。
 
-### 备用安装
+### 备用脚本
 
 本地仓库：
 
@@ -82,7 +103,7 @@ powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.c
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/SunQingyuan0/Kabutack/main/bootstrap.sh)"
 ```
 
-> 默认 profile 为 `web`，其他 profile 把 `web` 换成你的 profile 名。
+> 默认 profile 为 `web`，其他 profile 把 `web` 换成你的 profile 名。备用脚本内部也会调用官方 `dsh plugin --profile <profile> add <目录>`。
 
 ### 手动安装（可选）
 

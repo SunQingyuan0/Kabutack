@@ -68,9 +68,8 @@ Kabutack 做的事很简单：把能力组合定义成“角色”，比如“�
 
 安装：
 ```bash
-cd ~/.dsh/profiles/web
-bun add @galactus/kabutack
-# 或 npm install @galactus/kabutack
+dsh plugin --profile web add @galactus/kabutack
+# 本地开发：dsh plugin --profile web add /path/to/Kabutack
 ```
 
 项目：https://github.com/SunQingyuan0/Kabutack

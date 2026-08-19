@@ -149,6 +149,15 @@ await ctx.loader.import('file:///path/to/lib/index.js', () => [])
 
 ## 4. 持久化装配（profile patch）
 
+官方安装/卸载 bundle 插件推荐使用：
+
+```bash
+dsh plugin --profile <profile> add <package-or-dir>
+dsh plugin --profile <profile> remove <package>
+```
+
+`dsh plugin` 会把参数转发给 pnpm，并在成功后自动 reconcile `dsh.profile.bundles`。前提是包 manifest 声明了 `dsh.bundle.patch`。
+
 当前 DSH profile 的持久化入口：
 
 - `~/.dsh/profiles/web/package.json`
