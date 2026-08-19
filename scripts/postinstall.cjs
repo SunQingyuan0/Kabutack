@@ -19,6 +19,7 @@ const os = require('os')
 const path = require('path')
 
 const PACKAGE_NAME = '@galactus/kabutack'
+const OLD_PACKAGE_NAME = '@dsh-external/kabutack'
 
 function readJson(file) {
   let text = fs.readFileSync(file, 'utf8')
@@ -65,10 +66,14 @@ function findProfileFromDshHome() {
       const pkg = readJson(pkgFile)
       const deps = pkg.dependencies || {}
       const hasDependency = Object.prototype.hasOwnProperty.call(deps, PACKAGE_NAME)
+      const hasOldDependency = Object.prototype.hasOwnProperty.call(deps, OLD_PACKAGE_NAME)
       const hasLink = fs.existsSync(
+        path.join(profileDir, 'node_modules', '@galactus', 'kabutack'),
+      )
+      const hasOldLink = fs.existsSync(
         path.join(profileDir, 'node_modules', '@dsh-external', 'kabutack'),
       )
-      if (hasDependency || hasLink) return profileDir
+      if (hasDependency || hasOldDependency || hasLink || hasOldLink) return profileDir
     } catch {
       // Ignore malformed profile package.json and keep scanning.
     }
@@ -107,10 +112,22 @@ function main() {
   const profilePkgFile = path.join(profileRoot, 'package.json')
   const pkg = readJson(profilePkgFile)
 
+  // Clean up the pre-rename package name so npm/bun-installed profiles do not
+  // keep a stale dependency and bundle entry after the rename.
+  pkg.dependencies = pkg.dependencies || {}
+  delete pkg.dependencies[OLD_PACKAGE_NAME]
+
+  const oldLink = path.join(profileRoot, 'node_modules', '@dsh-external', 'kabutack')
+  if (fs.existsSync(oldLink)) {
+    fs.rmSync(oldLink, { recursive: true, force: true })
+  }
+
   pkg.dsh = pkg.dsh || {}
   pkg.dsh.profile = pkg.dsh.profile || {}
   if (!Array.isArray(pkg.dsh.profile.bundles)) {
     pkg.dsh.profile.bundles = []
+  } else {
+    pkg.dsh.profile.bundles = pkg.dsh.profile.bundles.filter((x) => x !== OLD_PACKAGE_NAME)
   }
 
   if (!pkg.dsh.profile.bundles.includes(PACKAGE_NAME)) {

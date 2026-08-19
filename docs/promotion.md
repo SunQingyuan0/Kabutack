@@ -34,7 +34,7 @@ npm publish
 npm view @galactus/kabutack
 ```
 
-> 注意：`@dsh-external` scope 必须属于你的 npm 账号；如果无权发布，需要把包名改为你拥有的 scope（如 `@sunqingyuan0/kabutack`），并同步修改 README 安装命令。
+> 注意：`@galactus` scope 必须属于你的 npm 账号；如果无权发布，需要把包名改为你拥有的 scope（如 `@sunqingyuan0/kabutack`），并同步修改 README 安装命令。
 
 ## 英文帖子（X / Reddit / Dev.to）
 

@@ -89,7 +89,7 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/SunQingyuan0/Kabutack/ma
 如果你熟悉 DSH profile 结构，也可以手动完成：
 
 1. 将 `lib/`、`package.json` 与 `cordis.patch.yml` 复制到 `~/.dsh/kabutack`
-2. 在 `~/.dsh/profiles/<profile>/node_modules/@dsh-external/` 下创建指向该目录的 junction/symlink
+2. 在 `~/.dsh/profiles/<profile>/node_modules/@galactus/` 下创建指向该目录的 junction/symlink
 3. 在 profile 的 `package.json` 中：
    - `dependencies` 添加 `"@galactus/kabutack": "link:<path>"`
    - `dsh.profile.bundles` 添加 `"@galactus/kabutack"`

@@ -33,7 +33,19 @@ Copy-Item -Force (Join-Path $SourceDir 'package.json') (Join-Path $TargetDir 'pa
 Copy-Item -Force (Join-Path $SourceDir 'cordis.patch.yml') (Join-Path $TargetDir 'cordis.patch.yml')
 
 # 2. Create node_modules junction/symlink inside the DSH profile
-$extDir = Join-Path $profileDir 'node_modules\@dsh-external'
+# (package renamed to @galactus/kabutack; drop the stale pre-rename link so
+# re-running the installer repairs profiles installed before the rename)
+$oldLink = Join-Path $profileDir 'node_modules\@dsh-external\kabutack'
+if (Test-Path $oldLink) {
+  $oldItem = Get-Item $oldLink
+  if ($oldItem.LinkType) {
+    # Remove the link itself, never its target.
+    Remove-Item $oldLink -Force
+  } else {
+    Remove-Item $oldLink -Recurse -Force
+  }
+}
+$extDir = Join-Path $profileDir 'node_modules\@galactus'
 New-Item -ItemType Directory -Force -Path $extDir | Out-Null
 $link = Join-Path $extDir 'kabutack'
 
@@ -63,6 +75,7 @@ $pkg = Get-Content $packageFile -Raw | ConvertFrom-Json
 if (-not $pkg.PSObject.Properties['dependencies'] -or $null -eq $pkg.dependencies) {
   $pkg | Add-Member -NotePropertyName 'dependencies' -NotePropertyValue ([pscustomobject]@{}) -Force
 }
+$pkg.dependencies.PSObject.Properties.Remove('@dsh-external/kabutack')
 $pkg.dependencies | Add-Member -NotePropertyName '@galactus/kabutack' -NotePropertyValue "link:$TargetDir" -Force
 
 if (-not $pkg.PSObject.Properties['dsh'] -or $null -eq $pkg.dsh) {
@@ -75,7 +88,7 @@ if (-not $pkg.dsh.profile.PSObject.Properties['bundles'] -or $null -eq $pkg.dsh.
   $pkg.dsh.profile | Add-Member -NotePropertyName 'bundles' -NotePropertyValue @() -Force
 }
 
-$bundles = @($pkg.dsh.profile.bundles | Where-Object { $_ -ne $null })
+$bundles = @($pkg.dsh.profile.bundles | Where-Object { $_ -ne $null -and $_ -ne '@dsh-external/kabutack' })
 if ($bundles -notcontains '@galactus/kabutack') {
   $bundles += '@galactus/kabutack'
 }

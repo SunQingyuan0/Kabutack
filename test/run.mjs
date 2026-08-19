@@ -35,7 +35,7 @@ run('package ships a valid DSH bundle patch', () => {
 
   const patch = readFileSync(patchFile, 'utf8')
   assert.match(patch, /id:\s*kabutack/)
-  assert.match(patch, /name:\s*['"]@dsh-external\/kabutack['"]/)
+  assert.match(patch, /name:\s*['"]@galactus\/kabutack['"]/)
 })
 
 run('roles store roundtrip', () => {
