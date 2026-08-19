@@ -38,89 +38,45 @@ Kabutack 是一个面向 [DSH](https://github.com/deepseek-ai/deepseek-harness) 
 
 ## 🚀 快速开始
 
-### 环境要求
+### 安装
 
-- DSH 已安装并至少运行过一次
-- 默认 profile：`web`（可通过参数指定）
-- 方式一需要 npm 或 bun（推荐 bun）
-
-### 一键安装（推荐）
-
-#### 方式一：npm / bun（推荐）
-
-先进入目标 DSH profile 目录：
+需要已安装 DSH，默认 profile 为 `web`。在 DSH profile 目录执行：
 
 ```bash
 cd ~/.dsh/profiles/web
-```
-
-使用 bun：
-
-```bash
 bun add @dsh-external/kabutack
+# 或 npm install @dsh-external/kabutack
 ```
 
-或使用 npm：
-
-```bash
-npm install @dsh-external/kabutack
-```
-
-也可以一行完成：
-
-```bash
-cd ~/.dsh/profiles/web && bun add @dsh-external/kabutack
-# 或
-cd ~/.dsh/profiles/web && npm install @dsh-external/kabutack
-```
-
-不想 `cd` 的话，npm 可以直接用 `--prefix` 指定 profile 目录：
+不想 `cd` 也可以用 npm 直接指定目录：
 
 ```bash
 npm install --prefix ~/.dsh/profiles/web @dsh-external/kabutack
 ```
 
-> 安装包内的 `postinstall` 会自动把 `@dsh-external/kabutack` 写入当前 profile 的 `dsh.profile.bundles`。完成后**重启 DSH**，在设置页即可看到 **Kabutack**。
->
-> 该方式需要 `@dsh-external/kabutack` 已发布到 npm；未发布前可先用 `npm install /本地/仓库/路径` 或下面的方式二/三。
->
-> 指定其他 profile 时，把上面的 `web` 换成你的 profile 名。
+> 包内 `postinstall` 会自动写入 `dsh.profile.bundles`，完成后**重启 DSH** 即可看到 **Kabutack**。
 
-#### 方式二：从本地仓库安装
+### 备用安装
 
-```powershell
-# Windows PowerShell
-powershell -ExecutionPolicy Bypass -File install.ps1
-```
+本地仓库：
 
 ```bash
+# Windows PowerShell
+powershell -ExecutionPolicy Bypass -File install.ps1
 # macOS / Linux / Git Bash
 ./install.sh
 ```
 
-指定 profile：
-
-```powershell
-powershell -ExecutionPolicy Bypass -File install.ps1 -Profile my-profile
-```
+远程一行（无需 Git）：
 
 ```bash
-./install.sh my-profile
-```
-
-安装完成后**重启 DSH**，在设置页即可看到 **Kabutack**。
-
-#### 方式三：远程一行命令（无需 Git）
-
-```powershell
+# Windows PowerShell
 powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/SunQingyuan0/Kabutack/main/bootstrap.ps1 | iex"
-```
-
-```bash
+# macOS / Linux / Git Bash
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/SunQingyuan0/Kabutack/main/bootstrap.sh)"
 ```
 
-> 远程安装脚本会下载仓库源码压缩包并自动执行安装，不再依赖 `git`。
+> 默认 profile 为 `web`，其他 profile 把 `web` 换成你的 profile 名。
 
 ### 手动安装（可选）
 
