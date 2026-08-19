@@ -47,7 +47,7 @@ Kabutack 是一个面向 [DSH](https://github.com/deepseek-ai/deepseek-harness) 
 需要已安装 DSH 和 pnpm，默认 profile 为 `web`。
 
 ```bash
-# 正式安装（npm 已发布）
+# 官方安装（npm 已发布）
 dsh plugin --profile web add @galactus/kabutack
 
 # 本地/未发布安装（Windows 示例：E:/coding/Kabutack）
@@ -56,13 +56,13 @@ dsh plugin --profile web add /path/to/Kabutack
 
 > 在仓库目录内可直接 `dsh plugin --profile web add .`。安装后**重启 DSH** 即可看到 **Kabutack**。
 
-其他安装方式：
+### npm / bun
 
-- **npm / bun**：`cd ~/.dsh/profiles/web && bun add @galactus/kabutack`（或 `npm install @galactus/kabutack`）
-- **本地脚本**：`./install.sh`（macOS/Linux/Git Bash）或 `powershell -ExecutionPolicy Bypass -File install.ps1`（Windows）
-- **远程一行**：`bash -c "$(curl -fsSL https://raw.githubusercontent.com/SunQingyuan0/Kabutack/main/bootstrap.sh)"` 或 PowerShell `irm https://raw.githubusercontent.com/SunQingyuan0/Kabutack/main/bootstrap.ps1 | iex`
-
-> 其他 profile 把 `web` 换成你的 profile 名即可。
+```bash
+cd ~/.dsh/profiles/web
+bun add @galactus/kabutack
+# 或 npm install @galactus/kabutack
+```
 
 ---
 
