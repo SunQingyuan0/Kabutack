@@ -44,77 +44,25 @@ Kabutack 是一个面向 [DSH](https://github.com/deepseek-ai/deepseek-harness) 
 
 ## 🚀 快速开始
 
-### 安装（官方推荐）
-
-需要已安装 DSH，且 `pnpm` 在 `PATH` 中（`dsh plugin` 会把参数转发给 pnpm）。默认 profile 为 `web`。
-
-已发布到 npm 后，使用包名安装：
+需要已安装 DSH 和 pnpm，默认 profile 为 `web`。
 
 ```bash
+# 正式安装（npm 已发布）
 dsh plugin --profile web add @galactus/kabutack
-```
 
-本地仓库开发 / 未发布时，直接添加插件目录：
-
-```bash
-# 在仓库目录外使用绝对路径（Windows 示例：E:/coding/Kabutack）
+# 本地/未发布安装（Windows 示例：E:/coding/Kabutack）
 dsh plugin --profile web add /path/to/Kabutack
-# 在仓库目录内也可以使用相对路径
-dsh plugin --profile web add .
 ```
 
-> `dsh plugin` 会自动把包写入 profile 的 `dsh.profile.bundles`，完成后**重启 DSH** 即可看到 **Kabutack**。
+> 在仓库目录内可直接 `dsh plugin --profile web add .`。安装后**重启 DSH** 即可看到 **Kabutack**。
 
-### 其他包管理器安装（可选）
+其他安装方式：
 
-如果你更习惯直接操作 profile，也可以在 DSH profile 目录执行：
+- **npm / bun**：`cd ~/.dsh/profiles/web && bun add @galactus/kabutack`（或 `npm install @galactus/kabutack`）
+- **本地脚本**：`./install.sh`（macOS/Linux/Git Bash）或 `powershell -ExecutionPolicy Bypass -File install.ps1`（Windows）
+- **远程一行**：`bash -c "$(curl -fsSL https://raw.githubusercontent.com/SunQingyuan0/Kabutack/main/bootstrap.sh)"` 或 PowerShell `irm https://raw.githubusercontent.com/SunQingyuan0/Kabutack/main/bootstrap.ps1 | iex`
 
-```bash
-cd ~/.dsh/profiles/web
-bun add @galactus/kabutack
-# 或 npm install @galactus/kabutack
-```
-
-不想 `cd` 也可以用 npm 直接指定目录：
-
-```bash
-npm install --prefix ~/.dsh/profiles/web @galactus/kabutack
-```
-
-> 包内 `postinstall` 会自动写入 `dsh.profile.bundles`。
-
-### 备用脚本
-
-本地仓库：
-
-```bash
-# Windows PowerShell
-powershell -ExecutionPolicy Bypass -File install.ps1
-# macOS / Linux / Git Bash
-./install.sh
-```
-
-远程一行（无需 Git）：
-
-```bash
-# Windows PowerShell
-powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/SunQingyuan0/Kabutack/main/bootstrap.ps1 | iex"
-# macOS / Linux / Git Bash
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/SunQingyuan0/Kabutack/main/bootstrap.sh)"
-```
-
-> 默认 profile 为 `web`，其他 profile 把 `web` 换成你的 profile 名。备用脚本内部也会调用官方 `dsh plugin --profile <profile> add <目录>`。
-
-### 手动安装（可选）
-
-如果你熟悉 DSH profile 结构，也可以手动完成：
-
-1. 将 `lib/`、`package.json` 与 `cordis.patch.yml` 复制到 `~/.dsh/kabutack`
-2. 在 `~/.dsh/profiles/<profile>/node_modules/@galactus/` 下创建指向该目录的 junction/symlink
-3. 在 profile 的 `package.json` 中：
-   - `dependencies` 添加 `"@galactus/kabutack": "link:<path>"`
-   - `dsh.profile.bundles` 添加 `"@galactus/kabutack"`
-4. 重启 DSH
+> 其他 profile 把 `web` 换成你的 profile 名即可。
 
 ---
 
